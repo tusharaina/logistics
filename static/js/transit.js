@@ -40,11 +40,11 @@ $.ajaxSetup({
 //
 //});
 $(document).ready(function () {
-    $('#start_date').datetimepicker({
-        language: 'en'
+    $('#start_date input').datepicker({
+        dateFormat: 'yy-mm-dd'
     });
-    $('#end_date').datetimepicker({
-        language: 'en'
+    $('#end_date input').datepicker({
+        dateFormat: 'yy-mm-dd'
     });
     $('#id_scheduling_time').timepicker();
     $('#id_scheduling_time').val('');
@@ -787,6 +787,35 @@ function generate_mis() {
 }
 
 $('#awb_report_cc_form select').on('change', function () {
+    $.ajax({
+        type: 'GET',
+        url: '/transit/awb/report_cc',
+        cache: true,
+        data: {
+            client: $('#awb_report_cc_form #client').val(),
+            status: $('#awb_report_cc_form #status').val(),
+            start_date: $('#awb_report_cc_form #start_date input').val(),
+            end_date: $('#awb_report_cc_form #end_date input').val()
+        },
+        success: function (response) {
+            $('#awb_table_cc').html(response);
+        }
+    });
+});
 
-
+$('#awb_report_cc_form input').on('change', function () {
+    $.ajax({
+        type: 'GET',
+        url: '/transit/awb/report_cc',
+        cache: true,
+        data: {
+            client: $('#awb_report_cc_form #client').val(),
+            status: $('#awb_report_cc_form #status').val(),
+            start_date: $('#awb_report_cc_form #start_date input').val(),
+            end_date: $('#awb_report_cc_form #end_date input').val()
+        },
+        success: function (response) {
+            $('#awb_table_cc').html(response);
+        }
+    });
 });

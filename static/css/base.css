@@ -34,6 +34,10 @@ input[type="checkbox"] {
     display: none;
 }
 
-#awb_report_cc_form select{
+#awb_report_cc_form select[name='client'] {
     width: 150px;
+}
+
+#awb_report_cc_form select[name='status'] {
+    width: 200px;
 }

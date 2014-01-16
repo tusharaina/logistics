@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.utils.formats import date_format
 from utils.upload import get_manifest_filename, upload_manifest_data
+from utils.constants import AWB_STATUS, AWB_FL_REMARKS, AWB_RL_REMARKS
 from .forms import UploadManifestForm
 from .tables import AWBTable, ManifestTable, AWBFLTable, AWBRLTable
 from .models import AWB, Manifest, AWB_Status, AWB_History
@@ -302,14 +303,23 @@ def awb_field_update(request):
         return HttpResponse('')
 
 
-def awb_report_cc(request, **kwargs):
-    if request.method == 'POST' and request.is_ajax():
-        awbs = AWB.objects.filter(**kwargs)
-
-        return render(request, 'awb/awb_report_call_center.html', {'awbs': awbs})
+def awb_report_cc(request):
+    if request.method == 'GET' and request.is_ajax():
+        filter = {}
+        if request.GET['client'] != '':
+            filter['awb_status__manifest__client__client_code'] = request.GET['client']
+        if request.GET['status'] != '':
+            filter['awb_status__status'] = request.GET['status']
+        if request.GET['start_date'] != '' and request.GET['end_date'] != '':
+            filter['creation_date__range'] = (
+            request.GET['start_date'] + ' 00:00:00', request.GET['end_date'] + ' 23:59:59')
+        print filter
+        awbs = AWB.objects.filter(**filter)
+        return render(request, 'awb/awb_status_update_cc.html',
+                      {'awbs': awbs, 'awb_rl_remarks': AWB_RL_REMARKS, 'awb_fl_remarks': AWB_FL_REMARKS})
     else:
         return render(request, 'awb/awb_report_call_center.html',
-                      {'clients': Client.objects.all(), 'status': AWB_Status.STATUS})
+                      {'clients': Client.objects.all(), 'status': AWB_STATUS})
 
 
 
