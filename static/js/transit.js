@@ -63,14 +63,13 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             url: 'get_tbs',
-            cache: true,
             data: {from_branch: $(this).val()},
-            beforeSend: function () {
-                ajaxloader($('#create_mts_form #table'));
-            },
+//            beforeSend: function () {
+//                ajaxloader($('#create_mts_form #table'));
+//            },
             success: function (response) {
                 $("#create_mts_form #table").html(response);
-                closeLoader();
+                //closeLoader();
             }
         });
     }
@@ -80,14 +79,14 @@ $(document).ready(function () {
     if ($("#dto_awb_table").length) {
         $.ajax({
             type: 'POST',
-            cache: true,
             url: '/transit/dto/get_awbs',
-            beforeSend: function () {
-                ajaxloader($('#dto_awb_table'));
-            },
+            cache: true,
+//            beforeSend: function () {
+//                ajaxloader($('#dto_awb_table'));
+//            },
             success: function (response) {
                 $("#dto_awb_table").html(response);
-                closeLoader();
+                //closeLoader();
             }
         });
     }
@@ -853,5 +852,5 @@ function ajaxloader(element) {
 }
 
 function closeLoader() {
-    $('#ajaxLoader').remove();
+    $('#ajaxLoader').hide();
 }
