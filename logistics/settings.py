@@ -41,7 +41,7 @@ ADMINS = (
 
 #TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com']
+ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com','test.nuvoex.com']
 # Application definition
 
 INSTALLED_APPS = (
