@@ -41,7 +41,7 @@ ADMINS = (
 
 #TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com','test.nuvoex.com']
+ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com', 'test.nuvoex.com']
 # Application definition
 
 INSTALLED_APPS = (
@@ -84,8 +84,11 @@ WSGI_APPLICATION = 'logistics.wsgi.application'
 import dj_database_url
 
 if not os.environ.has_key('DATABASE_URL'):
+    #local
     #os.environ['DATABASE_URL'] = 'postgres://nuvo:1@localhost/logistics'
+    #live
     #os.environ['DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
+    #test
     os.environ['DATABASE_URL'] = 'postgres://dnsbgkwdhldsoq:CRqK_QBLw8sqZworjXQ4PH1Mat@ec2-184-73-194-196.compute-1.amazonaws.com/dalnnb7i2dm00a'
 DATABASES = {
     'default': dj_database_url.config(default=os.environ['DATABASE_URL'])

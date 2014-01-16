@@ -184,11 +184,11 @@ function get_message() {
         cache: true,
         beforeSend: function () {
             if ($('#get_message').html() != '') {
-                $('#get_message').fadeOut('fast');
+                $('#get_message').fadeOut(10);
             }
         },
         success: function (response) {
-            $('#get_message').html(response).fadeIn('fast');
+            $('#get_message').html(response).fadeIn(100);
         }
     });
 }
