@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>{% block title %}Nuvo Logistics System{% endblock %}</title>
+    <meta name="description" content="Static &amp; Dynamic Tables"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="shortcut icon" href="/static/img/favicon.ico"/>
+    <!--basic styles-->
+    <link href="/static/css/dto_print_sheet.css" rel="stylesheet"/>
+</head>
+<body>
+<div id="wrapper">
+    <header>
+        <div class="logo"><img src="/static/img/logo.png"></div>
+        <div class="heading"><h1>DTO SHEET</h1></div>
+    </header>
+
+    <table id="table0" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+            <td>&nbsp</td>
+            <td width="200px"><strong>Date : </strong>{{ datetime }}</td>
+        </tr>
+        <tr>
+            <td width="800px"><strong>Branch : </strong>{{ dto.branch }}</td>
+
+            <td><strong>Client :</strong> {{ client }}</td>
+        </tr>
+        </thead>
+    </table>
+
+
+    <table id="table1" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+            <th width="40px"><strong>Sr. No.</strong></th>
+            <th width="200px">AWB</th>
+            <th width="200px">Order ID :</th>
+            <th width="80px">WT :</th>
+            <th width="40px">L :</th>
+            <th width="40px">B :</th>
+            <th width="40px">H :</th>
+            <th width="300px">Receiver's Comments :</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for awb in awbs %}
+            <tr>
+                <td>{{ forloop.counter }} </td>
+                <td>{{ awb.awb }} </td>
+                <td>{{ awb.order_id }} </td>
+                <td>{{ awb.weight }} Kg.</td>
+                <td>{{ awb.length }} cm</td>
+                <td>{{ awb.breadth }} cm</td>
+                <td>{{ awb.height }} cm</td>
+                <td></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table id="table3">
+        <thead>
+        <tr>
+            <td style=" border: 0px;"></td>
+            <th width="400px">Sent To Client</th>
+            <th width="400px">Accepted</th>
+            <th width="400px">Returned</th>
+        </tr>
+        <tr>
+            <th>Total Packets</th>
+            <td>
+                <div>{{ awbs|length }}</div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </td>
+            <td>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </td>
+            <td>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </td>
+        </tr>
+        </thead>
+    </table>
+</div>
+</body>
+</html>

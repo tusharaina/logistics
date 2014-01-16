@@ -1,0 +1,39 @@
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Open Sans Light'), local('OpenSans-Light'), url(/static/font/opensans300.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Open Sans'), local('OpenSans'), url(/static/font/opensans400.woff) format('woff');
+}
+
+input[type="checkbox"] {
+    visibility: visible;
+    height: 20px;
+    width: 20px;
+    display: inline-block;
+}
+
+#select_branch {
+    margin-top: 9px
+}
+
+#select_branch select {
+    width: 90%;
+    height: 26px;
+    border-radius: 2px;
+    padding: 0px;
+}
+
+#select_branch select option:first-child {
+    display: none;
+}
+
+#awb_report_cc_form select{
+    width: 150px;
+}

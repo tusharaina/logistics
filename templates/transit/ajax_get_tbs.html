@@ -1,0 +1,39 @@
+<div class="row-fluid" style="margin-top:10px">
+    <div class="span12">
+        <div class="row-fluid">
+            <div class="span12">
+                <h4 class="blue">TBs Available for Delivery</h4>
+                <table class="table table-bordered table-condensed table-stripped">
+                    <tr>
+                        <th>S.No.</th>
+                        <th class="center">
+                            <label>
+                                <input type="checkbox" checked="true" class="select_all">
+                                <span class="lbl"></span>
+                            </label>
+                        </th>
+                        <th>TB</th>
+                        <th>Origin Branch</th>
+                        <th>Current Branch</th>
+                        <th>Delivery Branch</th>
+                    </tr>
+                    {% for tb in tbs %}
+                        <tr id="{{ tb.pk }}">
+                            <td>{{ forloop.counter }}</td>
+                            <td class="center">
+                                <label>
+                                    <input type="checkbox" checked="true" id="{{ tb.pk }}">
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td>{{ tb.tb_id }}</td>
+                            <td>{{ tb.origin_branch }}</td>
+                            <td>{{ tb.get_current_branch }}</td>
+                            <td>{{ tb.delivery_branch }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+    <div class="page-content">
+        <form method="GET" action="/reports/generic">
+        <input type="hidden" name="type" value="generic">
+            <label> Type of AWB</label>
+  <select name="type_of_awb">
+{% for type_of_awb  in type_of_awbs%}
+          <option>{{ type_of_awb }}</option>
+            {% endfor %}
+  </select>
+        <label> Branch</label>
+             <select name="branch">
+                 {% for branch in branches %}
+      <option value="{{ branch.pk }}">
+          {{ branch.branch_name }}
+      </option>
+
+                 {% endfor %}
+  </select>
+        <label> Type of AWB</label>
+        <select name="awb_status">
+      {% for status  in awb_status%}
+          <option>{{ status }}</option>
+            {% endfor %}
+  </select>
+         <input type="submit" value="Submit">
+            </form>
+    </div>

@@ -1,0 +1,5 @@
+*.pyc
+staticfiles
+.idea/
+*.xls
+*.xlsx

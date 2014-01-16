@@ -1,0 +1,15 @@
+{% if awb %}
+    <tr id="{{ awb.pk }}">
+        <input type="hidden" value="{{ awb.pk }}">
+        <td>{{ awb.awb }}</td>
+        <td>{{ awb.order_id }}</td>
+        <td><input type="text" name="weight" class="input-medium"
+                   {% if awb.weight %}value="{{ awb.weight }}"{% endif %}></td>
+        <td><input type="text" name="length" class="input-medium"
+                   {% if awb.length %}value="{{ awb.length }}"{% endif %}></td>
+        <td><input type="text" name="breadth" class="input-medium"
+                   {% if awb.breadth %}value="{{ awb.breadth }}"{% endif %}></td>
+        <td><input type="text" name="height" class="input-medium"
+                   {% if awb.height %}value="{{ awb.height }}"{% endif %}></td>
+    </tr>
+{% endif %}

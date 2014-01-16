@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{#{% block scripts %}#}
+{#<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"> </script>#}
+{#    <script type="text/javascript" src="/static/js/highcharts/highcharts.js"></script>#}
+{#    <script type="text/javascript" src="/static/charts/piechart.js"></script>#}
+{#    <script type="text/javascript" src="/static/project_js/home.js"></script>#}
+{#{% endblock %}#}
+{% block content %}
+
+    {#    <div class="error-container">#}
+    {#        <div class="well">#}
+    {#            <h1 class="grey lighter smaller">#}
+    {#										<span class="blue bigger-125">#}
+    {#											<i class="icon-sitemap"></i>#}
+    {#											Welcome#}
+    {#										</span>#}
+    {#                NuvoEx Logistics Systems#}
+    {#            </h1>#}
+    {#        </div>#}
+    {#    <div style="height: 400px;width: 400px;float: left" id="manifest_graph">#}
+    {##}
+    {#    </div>#}
+    {#    <div id="drs_graph" style="height: 400px; width: 400px; float: left">#}
+    {##}
+    {#    </div>#}
+    {##}
+    {#    </div>#}
+    <div class="row-fluid">
+    <div class="span12">
+    <div id="get_message"></div>
+
+
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12 table-responsive">
+                <h4 class="blue">Incoming
+                    {#        <strong>#}
+                    {#            <small class="red"><i class="icon-double-angle-right"></i></small>#}
+                    {#        </strong>#}
+                </h4>
+            </div>
+        </div>
+        <div class="span7 infobox-container">
+
+            <div class="infobox infobox-pink  ">
+                <div class="infobox-icon">
+                    <i class="icon-shopping-cart"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_mts_incoming"></span>
+
+                    <div class="infobox-content">MTS</div>
+                </div>
+                <div class="stat stat-important">&nbsp</div>
+            </div>
+
+            <div class="infobox infobox-green  ">
+                <div class="infobox-icon">
+                    <i class="icon-comments"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_tb_incoming"></span>
+
+                    <div class="infobox-content">TB</div>
+                </div>
+                <div class="stat stat-important">&nbsp</div>
+            </div>
+
+            <div class="infobox infobox-blue  ">
+                <div class="infobox-icon">
+                    <i class="icon-twitter"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_incoming"></span>
+
+                    <div class="infobox-content">AWB</div>
+                </div>
+                <div class="stat stat-important">&nbsp</div>
+            </div>
+
+            <div class="infobox infobox-red  ">
+                <div class="infobox-icon">
+                    <i class="icon-dollar"></i>
+                </div>
+
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_incomingCOD"></span>
+
+                    <div class="infobox-content">
+                        COD
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="infobox infobox-orange2  ">
+                <div class="infobox-icon">
+                    <i class="icon-apple"></i>
+                </div>
+
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_incomingPRE"></span>
+
+                    <div class="infobox-content">
+                        Prepaid
+                    </div>
+                </div>
+            </div>
+            <div class="infobox infobox-blue2  ">
+                <div class="infobox-icon">
+                    <i class="icon-backward"></i>
+                </div>
+
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_incomingREV"></span>
+
+                    <div class="infobox-content">
+                        <span class="bigger-110">Reverse</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12 table-responsive">
+                <h4 class="blue">Outgoing
+                    {#        <strong>#}
+                    {#            <small class="red"><i class="icon-double-angle-right"></i></small>#}
+                    {#        </strong>#}
+                </h4>
+            </div>
+        </div>
+        <div class="span7 infobox-container">
+
+            <div class="infobox infobox-pink  ">
+                <div class="infobox-icon">
+                    <i class="icon-shopping-cart"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_mts_outgoing"></span>
+
+                    <div class="infobox-content">MTS</div>
+                </div>
+                <div class="stat stat-success">&nbsp</div>
+            </div>
+
+            <div class="infobox infobox-green  ">
+                <div class="infobox-icon">
+                    <i class="icon-comments"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_tb_outgoing"></span>
+
+                    <div class="infobox-content">TB</div>
+                </div>
+                <div class="stat stat-success">&nbsp</div>
+            </div>
+
+            <div class="infobox infobox-blue  ">
+                <div class="infobox-icon">
+                    <i class="icon-twitter"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_outgoing"></span>
+
+                    <div class="infobox-content">AWB</div>
+                </div>
+                <div class="stat stat-success">&nbsp</div>
+            </div>
+            <div class="infobox infobox-red  ">
+                <div class="infobox-icon">
+                    <i class="icon-dollar"></i>
+                </div>
+
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_outgoingCOD"></span>
+
+                    <div class="infobox-content">
+                        COD
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="infobox infobox-orange2  ">
+                <div class="infobox-icon">
+                    <i class="icon-apple"></i>
+                </div>
+
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_outgoingPRE"></span>
+
+                    <div class="infobox-content">
+                        Prepaid
+                    </div>
+                </div>
+            </div>
+            <div class="infobox infobox-blue2  ">
+                <div class="infobox-icon">
+                    <i class="icon-backward"></i>
+                </div>
+
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_count_awb_outgoingREV"></span>
+
+                    <div class="infobox-content">
+                        <span class="bigger-110">Reverse</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12 table-responsive">
+                <h4 class="blue">Open
+                    {#        <strong>#}
+                    {#            <small class="red"><i class="icon-double-angle-right"></i></small>#}
+                    {#        </strong>#}
+                </h4>
+            </div>
+        </div>
+        <div class="span7 infobox-container">
+
+            <div class="infobox infobox-green infobox-small infobox-dark">
+                <div class="infobox-progress">
+                    <div class="easy-pie-chart percentage" data-percent="61" data-size="39">
+                        <span class="percent"></span>
+                    </div>
+                </div>
+
+                <div class="infobox-data">
+                    <div class="infobox-content">
+                        DRS
+                    </div>
+                    <div class="infobox-content" id="get_count_drs_"></div>
+                </div>
+            </div>
+
+            <div class="infobox infobox-blue infobox-small infobox-dark">
+                <div class="infobox-chart">
+                    <span class="sparkline" data-values="3,4,2,3,4,4,2,2"></span>
+                </div>
+
+                <div class="infobox-data">
+                    <div class="infobox-content">
+                        DTO
+                    </div>
+                    <div class="infobox-content" id="get_count_dto_"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+{% endblock %}
