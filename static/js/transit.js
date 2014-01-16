@@ -53,6 +53,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             url: '/internal/branch/get_all',
+            cache: true,
             success: function (response) {
                 $('#select_branch').html(response);
             }
@@ -62,6 +63,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             url: 'get_tbs',
+            cache: true,
             data: {from_branch: $(this).val()},
             success: function (response) {
                 $("#create_mts_form #table").html(response);
@@ -74,6 +76,7 @@ $(document).ready(function () {
     if ($("#dto_awb_table").length) {
         $.ajax({
             type: 'POST',
+            cache: true,
             url: '/transit/dto/get_awbs',
             success: function (response) {
                 $("#dto_awb_table").html(response);
@@ -107,6 +110,7 @@ function get_drs_awbs(sort, element) {
     $.ajax({
         type: 'GET',
         url: '/transit/drs/get_awbs',
+        cache: true,
         data: {
             sort: sort
         },
@@ -159,6 +163,7 @@ $('#select_branch #id_branch').live('change', function () {
     $.ajax({
         type: 'POST',
         url: '/user/set_branch',
+        cache: true,
         data: {
             branch: $(this).val()
         },
@@ -176,6 +181,7 @@ function get_message() {
     $.ajax({
         type: 'GET',
         url: '/user/get_message',
+        cache: true,
         beforeSend: function () {
             if ($('#get_message').html() != '') {
                 $('#get_message').fadeOut('fast');
@@ -191,6 +197,7 @@ $("#create_tb_form #id_delivery_branch").change(function () {
     $.ajax({
         type: 'POST',
         url: 'get_awbs',
+        cache: true,
         data: {delivery_branch: $(this).val()},
 //        beforeSend: function () {
 //            if ($("#awb_table").html() != '')
@@ -218,6 +225,7 @@ $("#create_tb_form").submit(function (e) {
         $.ajax({
             type: 'POST',
             url: '/transit/tb/create_tb',
+            cache: true,
             data: {
                 origin_branch: $('#id_origin_branch').val(),
                 delivery_branch: $('#id_delivery_branch').val(),
@@ -248,6 +256,7 @@ $('#tb_in_scanning_table tbody tr td:first-child input').live('change', function
         $.ajax({
             type: 'POST',
             url: '/transit/tb/in_scanning',
+            cache: true,
             data: {
                 awb: awb,
                 delivery_branch: $("#create_tb_form #id_delivery_branch").val()
@@ -276,6 +285,7 @@ $("#create_mts_form").submit(function (e) {
         $.ajax({
             type: 'POST',
             url: 'create_mts',
+            cache: true,
             data: {
                 from_branch: $('#id_from_branch').val(),
                 to_branch: $('#id_to_branch').val(),
@@ -309,6 +319,7 @@ $("#create_drs_form").submit(function (e) {
         $.ajax({
             type: 'POST',
             url: 'create_drs',
+            cache: true,
             data: {
                 fe: $('#id_fe').val(),
                 vehicle: $('#id_vehicle').val(),
@@ -336,6 +347,7 @@ $("#create_dto_form").submit(function () {
         $.ajax({
             type: 'POST',
             url: '/transit/dto/create_dto',
+            cache: true,
             data: {
                 fe: $('#id_fe').val(),
                 vehicle: $('#id_vehicle').val(),
@@ -355,24 +367,25 @@ $("#create_dto_form").submit(function () {
     return false;
 });
 
-$('#dto_in_scanning_table tbody tr input[type="text"]').live('keypress', function (e) {
-    if (e.which == 13) {
-        var awb = $(this).closest('tr').attr('id');
-        var type = $(this).attr('name');
-        var val = $(this).val();
-        $.ajax({
-            type: 'POST',
-            url: '/transit/awb/field_update',
-            data: {
-                awb: awb,
-                field: type,
-                val: val
-            },
-            success: function (response) {
-                get_message();
-            }
-        });
-    }
+$('#dto_in_scanning_table tbody tr input[type="text"]').live('change', function (e) {
+//    if (e.which == 13) {
+    var awb = $(this).closest('tr').attr('id');
+    var type = $(this).attr('name');
+    var val = $(this).val();
+    $.ajax({
+        type: 'POST',
+        url: '/transit/awb/field_update',
+        cache: true,
+        data: {
+            awb: awb,
+            field: type,
+            val: val
+        },
+        success: function (response) {
+            get_message();
+        }
+    });
+    // }
 });
 
 $('#manifest_in_scanning_table tbody tr td:first-child input').live('change', function () {
@@ -384,7 +397,8 @@ $('#manifest_in_scanning_table tbody tr td:first-child input').live('change', fu
     if (awb != '') {
         $.ajax({
             type: 'POST',
-            url: '/transit/manifest/in_scanning',
+            url: '/transit/awb/in_scanning',
+            cache: true,
             data: {
                 awb: awb
             },
@@ -406,6 +420,7 @@ $('#drs_in_scanning_table tbody tr td:first-child input').live('change', functio
         $.ajax({
             type: 'POST',
             url: '/transit/drs/create',
+            cache: true,
             data: {
                 awb: awb
             },
@@ -434,6 +449,7 @@ $('#dto_in_scanning #awb_in_scan').live('change', function () {
         $.ajax({
             type: 'POST',
             url: '/transit/dto/create',
+            cache: true,
             data: {
                 awb: awb
             },
@@ -499,6 +515,7 @@ $('#updateMTSStatus').live('change', function () {
         $.ajax({
             type: 'POST',
             url: '/transit/mts/update_status',
+            cache: true,
             data: {
                 mts_id: $(element).closest('tr').find('.mts_id').text(),
                 status: $(element).val()
@@ -517,6 +534,7 @@ $('#updateDRSStatus').live('change', function () {
         $.ajax({
             type: 'POST',
             url: '/transit/drs/update_status',
+            cache: true,
             data: {
                 drs_id: $(element).closest('tr').find('.id').text(),
                 status: $(element).val()
@@ -590,6 +608,7 @@ $("#drs_status_update_form").submit(function () {
         $.ajax({
             type: 'POST',
             url: '/transit/drs/awb_status_update',
+            cache: true,
             data: {
                 awb_status: status,
                 collected_amts: JSON.stringify(collected_amts),
@@ -613,6 +632,7 @@ $("#dto_status_update_form").submit(function () {
         $.ajax({
             type: 'POST',
             url: '/transit/dto/awb_status_update',
+            cache: true,
             data: {
                 awb_status: $('#dto_status_update_form #awb_status').val(),
                 awbs: JSON.stringify(awbs)
@@ -671,6 +691,7 @@ function inScanDRSAWB(element) {
     $.ajax({
         type: 'POST',
         url: '/transit/drs/awb_cancel_scan',
+        cache: true,
         data: {
             id: $(element).closest('tr').attr('id'),
             awb: $(element).val()
@@ -697,6 +718,7 @@ $('#collected_amount').live('keypress', function (e) {
                     $.ajax({
                         type: 'POST',
                         url: '/transit/drs/drs_awb_status_update',
+                        cache: true,
                         data: {
                             awb: element.closest('tr').attr('id'),
                             status: 'DEL',
@@ -737,6 +759,7 @@ function updateDRSAWBStatus(element) {
             $.ajax({
                 type: 'POST',
                 url: '/transit/drs/drs_awb_status_update',
+                cache: true,
                 data: {
                     awb: $(element).closest('tr').attr('id'),
                     status: $(element).val(),

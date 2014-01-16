@@ -33,7 +33,7 @@ SECRET_KEY = '81psubnpj4e1u_dg&044x8tvi^dtou_)0zdw^o85546&ep1kpz'
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
-DEBUG = True
+DEBUG = False
 
 ADMINS = (
     ('admin', 'abishek.verma@nuvoex.com'),
@@ -41,7 +41,7 @@ ADMINS = (
 
 #TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com', 'test.nuvoex.com']
+ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com']
 # Application definition
 
 INSTALLED_APPS = (
@@ -85,8 +85,7 @@ import dj_database_url
 
 if not os.environ.has_key('DATABASE_URL'):
     #os.environ['DATABASE_URL'] = 'postgres://nuvo:1@localhost/logistics'
-    os.environ[
-        'DATABASE_URL'] = 'postgres://dnsbgkwdhldsoq:CRqK_QBLw8sqZworjXQ4PH1Mat@ec2-184-73-194-196.compute-1.amazonaws.com/dalnnb7i2dm00a'
+    os.environ['DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
 DATABASES = {
     'default': dj_database_url.config(default=os.environ['DATABASE_URL'])
 }
