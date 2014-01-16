@@ -86,7 +86,7 @@ import dj_database_url
 if not os.environ.has_key('DATABASE_URL'):
     #local
     #os.environ['DATABASE_URL'] = 'postgres://nuvo:1@localhost/logistics'
-    os.environ['DATABASE_URL'] = 'postgres://nuvoex:nuvoex@123@ec2-54-201-178-212.us-west-2.compute.amazonaws.com:6432/nuvoex'
+    os.environ['DATABASE_URL'] = 'postgres://nuvoex:nuvoex@123@54.201.178.212:6432/nuvoex'
     #live
     #os.environ['DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
     #test
