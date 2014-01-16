@@ -57,9 +57,12 @@
             <th><a href="javascript:void(0)" id="awb_status__status" onclick="get_drs_awbs('awb_status__status',this)">Status</a>
             </th>
             <th><a href="javascript:void(0)" id="address_1" onclick="get_drs_awbs('address_1',this)">Address</a></th>
-            <th><a href="javascript:void(0)" id="pincode__pincode" onclick="get_drs_awbs('pincode__pincode',this)">Pincode</a></th>
+            <th><a href="javascript:void(0)" id="pincode__pincode" onclick="get_drs_awbs('pincode__pincode',this)">Pincode</a>
+            </th>
             {#            <th>Pickup Branch</th>#}
-            {#            <th>DTO Branch</th>#}
+            <th><a href="javascript:void(0)" id="awb_status__manifest__branch__branch_name"
+                   onclick="get_drs_awbs('awb_status__manifest__branch__branch_name',this)">DTO
+                Branch</a></th>
         </tr>
         </thead>
         <tbody>
@@ -78,7 +81,7 @@
                 <td>{{ awb.address_1 }}, {{ awb.address_2 }}</td>
                 <td>{{ awb.pincode.pincode }}</td>
                 {#                <td>{{ awb.get_pickup_branch.branch_name }}</td>#}
-                {#                <td>{{ awb.get_delivery_branch.branch_name }}</td>#}
+                <td>{{ awb.get_delivery_branch.branch_name }}</td>
             </tr>
         {% endfor %}
         </tbody>
