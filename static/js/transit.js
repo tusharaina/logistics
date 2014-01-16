@@ -808,6 +808,9 @@ $('#awb_report_cc_form input').on('change', function () {
         type: 'GET',
         url: '/transit/awb/report_cc',
         cache: true,
+        beforeSend: function () {
+            ajaxloader($('#awb_table_cc'));
+        },
         data: {
             client: $('#awb_report_cc_form #client').val(),
             status: $('#awb_report_cc_form #status').val(),
@@ -819,3 +822,20 @@ $('#awb_report_cc_form input').on('change', function () {
         }
     });
 });
+
+function ajaxloader(element) {
+    $(element).html('<img src="/static/img/loader.gif" id="ajaxLoader">');
+    var height = element.height();
+    var width = element.width();
+    var pos = element.position();
+
+    $('#ajaxLoader').css({
+        top: height / 2 + pos.top,
+        left: width / 2 + pos.left,
+        position: 'absolute'
+    });
+}
+
+function closeLoader() {
+    $('#ajaxLoader').hide();
+}
