@@ -65,8 +65,12 @@ $(document).ready(function () {
             url: 'get_tbs',
             cache: true,
             data: {from_branch: $(this).val()},
+            beforeSend: function () {
+                ajaxloader($('#create_mts_form #table'));
+            },
             success: function (response) {
                 $("#create_mts_form #table").html(response);
+                closeLoader();
             }
         });
     }
@@ -78,8 +82,12 @@ $(document).ready(function () {
             type: 'POST',
             cache: true,
             url: '/transit/dto/get_awbs',
+            beforeSend: function () {
+                ajaxloader($('#dto_awb_table'));
+            },
             success: function (response) {
                 $("#dto_awb_table").html(response);
+                closeLoader();
             }
         });
     }
@@ -114,8 +122,12 @@ function get_drs_awbs(sort, element) {
         data: {
             sort: sort
         },
+        beforeSend: function () {
+            ajaxloader($('#drs_awb_table'));
+        },
         success: function (response) {
             $("#drs_awb_table").html(response);
+            closeLoader();
         }
     });
 }
@@ -791,6 +803,9 @@ $('#awb_report_cc_form select').on('change', function () {
         type: 'GET',
         url: '/transit/awb/report_cc',
         cache: true,
+        beforeSend: function () {
+            ajaxloader($('#awb_table_cc'));
+        },
         data: {
             client: $('#awb_report_cc_form #client').val(),
             status: $('#awb_report_cc_form #status').val(),
@@ -819,6 +834,7 @@ $('#awb_report_cc_form input').on('change', function () {
         },
         success: function (response) {
             $('#awb_table_cc').html(response);
+            closeLoader();
         }
     });
 });
@@ -826,16 +842,16 @@ $('#awb_report_cc_form input').on('change', function () {
 function ajaxloader(element) {
     $(element).html('<img src="/static/img/loader.gif" id="ajaxLoader">');
     var height = element.height();
-    var width = element.width();
+    var width = $('body').width();
     var pos = element.position();
 
     $('#ajaxLoader').css({
         top: height / 2 + pos.top,
-        left: width / 2 + pos.left,
+        left: width / 2,
         position: 'absolute'
     });
 }
 
 function closeLoader() {
-    $('#ajaxLoader').hide();
+    $('#ajaxLoader').remove();
 }
