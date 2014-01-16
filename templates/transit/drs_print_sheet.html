@@ -51,19 +51,19 @@
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>
-                    <b>AWB </b>{{ awb.awb }}<br/><b>Wt. </b>{{ awb.weight }} Kg.<br/>{{ awb.get_readable_choice }}<br/>
-                    {% if awb.category == 'COD' %}<b>Amount </b>{{ awb.expected_amount }}{% endif %}
+                    <b>AWB : </b>{{ awb.awb }}<br/><b>Wt. : </b>{{ awb.weight }} Kg.<br/>{{ awb.get_readable_choice }}<br/>
+                    {% if awb.category == 'COD' %}<b>Amount : </b>{{ awb.expected_amount }}{% endif %}
                 </td>
-                <td><b>Name </b>{{ awb.customer_name|title }}<br/>
-                    <b>Address </b>{{ awb.address_1|title }}, {{ awb.address_2|title }}, {{ awb.city|title }}, {{ awb.pincode }}
-                    <br/><b>Phone </b>{{ awb.phone_1 }}
-                    <br/><b>Alt Phone </b>{{ awb.phone_2 }}
-                </td>
-                <td>
+                <td><b>Name : </b>{{ awb.customer_name|title }}<br/>
+                    <b>Address : </b>{{ awb.address_1|title }}, {{ awb.address_2|title }}, {{ awb.city|title }}, {{ awb.pincode }}
+                    <br/><b>Phone : </b>{{ awb.phone_1 }}
+                    <br/><b>Alt Phone : </b>{{ awb.phone_2 }}
                 </td>
                 <td>
-                    <b>Name </b><br/>
-                    <b>Reason </b>
+                </td>
+                <td>
+                    <b>Name : </b><br/>
+                    <b>Reason : </b>
                 </td>
             </tr>
         {% endfor %}
@@ -79,14 +79,18 @@
             <th width="400px">BRANCH MANAGER</th>
         </tr>
         <tr>
-            <th>
-                Total COD<br/>
+            <th width="400px">
                 Total Prepaid<br/>
                 Total RevPick<br/>
+                Total COD<br/>
+                Expected Cash
             </th>
-            <td>
-
-            </td>
+            <th width="200px">
+                {{ PREs }}<br/>
+                {{ REVs }}<br/>
+                {{ CODs }}<br/>
+                Rs. {{ drs.get_expected_amount }}
+            </th>
             <td>
 
             </td>

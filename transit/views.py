@@ -436,6 +436,9 @@ def drs_get_print_sheet(request):
     context = {
         'drs': drs,
         'awbs': awbs,
+        'CODs': len([awb for awb in awbs if awb.category == 'COD']),
+        'PREs': len([awb for awb in awbs if awb.category == 'PRE']),
+        'REVs': len([awb for awb in awbs if awb.category == 'REV']),
         #'branch': Branch.objects.get(pk=int(request.session['branch'])).branch_name,
         'datetime': strftime("%Y-%m-%d %H:%M", gmtime())
     }
