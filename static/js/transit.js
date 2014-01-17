@@ -213,7 +213,7 @@ function get_message() {
         cache: true,
         beforeSend: function () {
             if ($('#get_message').html() != '') {
-                $('#get_message').fadeOut(10);
+                $('#get_message').fadeOut(100);
             }
         },
         success: function (response) {
@@ -854,4 +854,51 @@ $('#awb_report_cc_form input').on('change', function () {
             closeLoader();
         }
     });
+});
+
+
+$('#awb_table_cc #status').live('change', function () {
+    var awb = $(this).closest('tr').attr('id');
+    var status = $(this).closest('tr').find('#status').val();
+    if (status == 'SCH') {
+        $(this).closest('tr').find('#reason_' + awb).datepicker({
+            dateFormat: 'yy-mm-dd'
+        }).focus();
+    } else {
+        $(this).closest('tr').find('#reason_' + awb).datepicker('destroy');
+    }
+});
+
+
+$('#awb_table_cc button').live('click', function () {
+    var awb = $(this).closest('tr').attr('id');
+    var status = $(this).closest('tr').find('#status').val();
+    var remark = $(this).closest('tr').find('#remark').val();
+    var reason = $(this).closest('tr').find('#reason_' + awb).val();
+    if (status == 'SCH' && reason == '') {
+        alert('Please choose scheduled date');
+        $(this).closest('tr').find('#reason_' + awb).focus();
+    } else if (remark == 'Other' && reason == '') {
+        alert('Please enter a reason');
+        $(this).closest('tr').find('#reason_' + awb).focus();
+    } else if (remark == '') {
+        alert('Please select a remark');
+        $(this).closest('tr').find('#remark').focus();
+    } else {
+        $.ajax({
+            type: 'POST',
+            url: '/transit/awb/update_by_cc',
+            cache: true,
+            data: {
+                awb: awb,
+                status: status,
+                remark: remark,
+                reason: reason
+            },
+            success: function (response) {
+                get_message();
+            }
+        });
+        $(this).closest('tr').fadeOut('slow');
+    }
 });

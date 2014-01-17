@@ -47,6 +47,7 @@ class Employee(Time_Model):
         ('BM', 'Branch Manager'),
         ('FE', 'Field Executive'),
         ('FIN', 'Finance'),
+        ('CS', 'Customer Service'),
         ('HR', 'HR'),
         ('CL', 'Client'),
         ('OT', 'Other'),

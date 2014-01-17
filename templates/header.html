@@ -5,7 +5,7 @@
                 <small><i class="icon-leaf"></i> NuvoEx Dashboard</small>
             </a>
             {% block userarea %}{% include "userarea.html" %}{% endblock %}
-            {% if user.is_superuser or user.profile.role == 'OM' %}
+            {% if user.is_superuser or user.profile.branch.branch_name == 'HQ' or user.profile.branch.branch_name == '' %}
                 <span id="select_branch" class="select2-container pull-right"></span>
             {% endif %}
         </div>

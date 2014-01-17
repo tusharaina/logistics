@@ -198,7 +198,7 @@
     </li>
 {% endif %}
 <li>
-    {% if user.is_superuser or user.profile.role == 'OM' or user.profile.role == 'CL' %}
+    {% if user.is_superuser or user.profile.role == 'OM' or user.profile.role == 'CL' or user.profile.role == 'CS' %}
         <a href="javascript:void(0)" class="dropdown-toggle"> <i class="icon-edit"></i>
             <span class="menu-text"> Reports </span>
             <b class="arrow icon-angle-down"></b>
@@ -239,7 +239,7 @@
             <a href="/transit/awb/mis"> <i class="icon-double-angle-right"></i> MIS </a>
         </li>
         <li>
-            <a href="/transit/awb/report_cc"> <i class="icon-double-angle-right"></i> CC </a>
+            <a href="/transit/awb/report_cc"> <i class="icon-double-angle-right"></i> CS </a>
         </li>
     {% endif %}
     </ul>

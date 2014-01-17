@@ -87,7 +87,7 @@ class DRS(Time_Model):
         return self.awb_status_set.all().count()
 
     def get_awb_close_count(self):
-        return self.awb_status_set.filter(status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET']).count()
+        return self.awb_status_set.filter(status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET', 'SCH']).count()
 
     def get_expected_amount(self):
         exp_amt = self.awb_status_set.exclude(manifest__category='RL').aggregate(

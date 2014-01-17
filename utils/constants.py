@@ -45,6 +45,7 @@ AWB_STATUS = (
     ('DTO', 'Dispatched to Client'),
     ('DEL', 'Delivered/DTO\'d to Client'),
     ('CAN', 'Cancelled'),
+    ('SCH', 'Scheduled'),
     ('RET', 'Returned'),
     ('RBC', 'Rejected by Client'),
     ('CB', 'Called Back'),

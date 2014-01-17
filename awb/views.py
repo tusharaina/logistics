@@ -87,7 +87,8 @@ def awb_download_mis(request):
         # Write data rows
         header = ['AWB', 'Client', 'Order ID', 'Consignee', 'Phone', 'Pincode', 'Category', 'Amount', 'COD Amount',
                   'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count', 'First Pending',
-                  'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status', 'First Scan Location', 'Date']
+                  'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status', 'First Scan Location',
+                  'CS Call Made', 'Remark', 'Reason', 'Date']
         writer.writerow(header)
         for id in awbs:
             for awb in AWB.objects.filter(pk=id):
@@ -97,8 +98,9 @@ def awb_download_mis(request):
                      awb.get_delivery_branch(), awb.get_pickup_branch(), awb.get_drs_count(), awb.get_first_pending(),
                      awb.get_first_dispatch(), awb.get_last_dispatch(), awb.get_last_scan(),
                      awb.awb_status.get_readable_choice(),
-                     awb.get_first_scan_branch(), date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
-
+                     awb.get_first_scan_branch(), awb.get_last_call_made_time(), awb.awb_status.remark,
+                     awb.awb_status.reason,
+                     date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
         return response
 
 
@@ -276,7 +278,8 @@ def awb_status_update(request):
         awbs = json.loads(request.POST['awbs'])
         for awb in awbs:
             AWB_Status.objects.filter(awb=int(awb)).update(status=request.POST['awb_status'])
-            AWB_History.objects.create(status=request.POST['awb_status'], branch_id=request.session['branch'])
+            AWB_History.objects.create(awb=awb.pk, status=request.POST['awb_status'],
+                                       branch_id=request.session['branch'])
         return HttpResponse(True)
     else:
         return HttpResponse(False)
@@ -325,4 +328,18 @@ def awb_report_cc(request):
                       {'clients': Client.objects.all(), 'status': AWB_STATUS})
 
 
-
+def awb_update_by_cc(request):
+    if request.method == 'POST' and request.is_ajax():
+        request.session['message'] = {}
+        awb = AWB_Status.objects.get(awb=int(request.POST['awb']))
+        awb.status = request.POST['status']
+        awb.remark = request.POST['remark']
+        awb.reason = request.POST['reason']
+        awb.updated_by = request.user
+        awb.save()
+        id = AWB.objects.get(pk=request.POST['awb'])
+        request.session['message']['class'] = 'success'
+        request.session['message']['report'] = 'AWB : ' + id.awb + ' | Status : ' + id.awb_status.get_readable_choice()
+        return HttpResponse(True)
+    else:
+        return HttpResponse('')

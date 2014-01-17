@@ -98,42 +98,42 @@ class AWB(Time_Model):
                     hist_dict[i]['branch'] = h.branch.branch_name
                 except AttributeError:
                     hist_dict[i]['branch'] = ''
-                hist_dict[i]['status'] = get_awb_status('status', h.status, hist_dict[i]['branch'], h.awb.category)
+                hist_dict[i]['status'] = get_awb_status('status', h.status, hist_dict[i]['branch'], self)
                 hist_dict[i]['time'] = h.creation_date
                 i = i + 1
 
             if h.tb != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.tb.origin_branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('tb', h.tb.tb_id, hist_dict[i]['branch'], h.awb.category)
+                hist_dict[i]['status'] = get_awb_status('tb', h.tb.tb_id, hist_dict[i]['branch'], self)
                 hist_dict[i]['time'] = h.creation_date
                 i = i + 1
 
             if h.mts != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.mts.from_branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('mts', h.mts.mts_id, hist_dict[i]['branch'], h.awb.category)
+                hist_dict[i]['status'] = get_awb_status('mts', h.mts.mts_id, hist_dict[i]['branch'], self)
                 hist_dict[i]['time'] = h.creation_date
                 i = i + 1
 
             if h.drs != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.drs.branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('drs', h.drs.drs_id, hist_dict[i]['branch'], h.awb.category)
+                hist_dict[i]['status'] = get_awb_status('drs', h.drs.drs_id, hist_dict[i]['branch'], self)
                 hist_dict[i]['time'] = h.creation_date
                 i = i + 1
 
             if h.dto != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.dto.branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('dto', h.dto.dto_id, hist_dict[i]['branch'], h.awb.category)
+                hist_dict[i]['status'] = get_awb_status('dto', h.dto.dto_id, hist_dict[i]['branch'], self)
                 hist_dict[i]['time'] = h.creation_date
                 i = i + 1
 
             if h.rto != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.rto.branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('rto', h.rto.rto_id, hist_dict[i]['branch'], h.awb.category)
+                hist_dict[i]['status'] = get_awb_status('rto', h.rto.rto_id, hist_dict[i]['branch'], self)
                 hist_dict[i]['time'] = h.creation_date
                 i = i + 1
 
@@ -202,6 +202,15 @@ class AWB(Time_Model):
             except Exception:
                 return ''
 
+    def get_last_call_made_time(self):
+        try:
+            return date_format(
+                self.awb_history_set.filter(status__in=['CAN', 'SCH', 'DBC', 'CB', 'RET'], branch=None).order_by(
+                    '-creation_date')[0].creation_date, "SHORT_DATETIME_FORMAT")
+        except Exception:
+            return ''
+
+
     class Meta:
         verbose_name = 'AWB'
 
@@ -230,7 +239,8 @@ class AWB_Status(Time_Model):
         ('DBC', 'Deferred by Customer'),
         ('CNA', 'Customer not Available'),
         ('RBC', 'Rejected by Client'),
-        ('CB', 'Called Back')
+        ('CB', 'Called Back'),
+        ('SCH', 'Scheduled')
     )
     awb = models.OneToOneField('AWB', related_name="awb_status")
     manifest = models.ForeignKey('Manifest', null=True, blank=True)
@@ -243,10 +253,12 @@ class AWB_Status(Time_Model):
     collected_amt = models.FloatField(max_length=12, null=True, blank=True)
     status = models.CharField(choices=STATUS, max_length=3, default='DR')
     zone = models.ForeignKey('zoning.Zone', null=True, blank=True)
-    remarks = models.CharField(max_length=200, blank=True, default='')
+    remark = models.CharField(max_length=200, blank=True, default='')
+    reason = models.CharField(max_length=200, blank=True, default='')
+    updated_by = models.ForeignKey(User, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        AWB_History.objects.create(status=self.status, awb=self.awb)
+        AWB_History.objects.create(status=self.status, awb=self.awb, updated_by=self.updated_by)
         return super(AWB_Status, self).save(*args, **kwargs)
 
     def get_readable_choice(self):
@@ -288,36 +300,45 @@ class AWB_History(Time_Model):
     branch = models.ForeignKey('internal.Branch', null=True, blank=True)
 
 
-def get_awb_status(type, status, branch, category):
+def get_awb_status(type, status, branch, awb):
     if type == 'status':
+        try:
+            if awb.awb_status.updated_by.profile.role == 'CS':
+                prefix = 'CS Call Made : '
+            else:
+                prefix = ''
+        except Exception:
+            prefix = ''
         if status == 'DR':
             return 'Data Received'
         elif status == 'ISC':
             return 'In-Scanned at ' + branch + ' branch'
         elif status == 'DCR':
-            if category == 'REV':
+            if awb.category == 'REV':
                 return 'Pending for DTO at ' + branch + ' branch'
             else:
                 return 'Pending for Delivery at ' + branch + ' branch'
         elif status == 'RET':
-            return 'Return'
+            return prefix + 'Return'
         elif status == 'CAN':
-            return 'Cancelled'
+            return prefix + 'Cancelled'
         elif status == 'DBC':
-            return 'Referred by Customer'
+            return prefix + 'Deferred by Customer for Date : ' + awb.awb_status.reason
         elif status == 'CNA':
-            return 'Customer not Available'
+            return prefix + 'Customer not Available'
         elif status == 'CB':
-            return 'Called Back at ' + branch + ' branch'
+            return prefix + 'Called Back at ' + branch + ' branch'
         elif status == 'RBC':
-            return 'Rejected by Client'
+            return prefix + 'Rejected by Client'
         elif status == 'DEL':
-            if category == 'REV':
+            if awb.category == 'REV':
                 return "DTO'd to Client"
             else:
                 return 'Delivered'
         elif status == 'PC':
             return 'Pickup Completed at ' + branch + ' branch'
+        elif status == 'SCH':
+            return prefix + 'Scheduled for Date : ' + awb.awb_status.reason
         else:
             return status
     else:

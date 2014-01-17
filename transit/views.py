@@ -274,16 +274,16 @@ def drs(request):
 def ajax_get_drs_awbs(request):
     if request.method == "GET" and request.is_ajax():
         if 'branch' in request.session:
-            fl = AWB.objects.filter(awb_status__status__in=['DCR', 'CAN', 'DBC', 'CNA'],
+            fl = AWB.objects.filter(awb_status__status__in=['DCR', 'CAN', 'DBC', 'CNA', 'SCH'],
                                     pincode__branch_pincode__branch_id=request.session['branch']).exclude(
                 category='REV').order_by(request.GET['sort'])
-            rl = AWB.objects.filter(awb_status__status__in=['DR', 'DBC', 'CNA'], category='REV',
+            rl = AWB.objects.filter(awb_status__status__in=['DR', 'DBC', 'CNA', 'SCH'], category='REV',
                                     pincode__branch_pincode__branch_id=request.session['branch']).order_by(
                 request.GET['sort'])
         else:
-            fl = AWB.objects.filter(awb_status__status__in=['DCR', 'CAN', 'DBC', 'CNA']).exclude(
+            fl = AWB.objects.filter(awb_status__status__in=['DCR', 'CAN', 'DBC', 'CNA', 'SCH']).exclude(
                 category='REV').order_by(request.GET['sort'])
-            rl = AWB.objects.filter(awb_status__status__in=['DR', 'DBC', 'CNA'], category='REV').order_by(
+            rl = AWB.objects.filter(awb_status__status__in=['DR', 'DBC', 'CNA', 'SCH'], category='REV').order_by(
                 request.GET['sort'])
         return render(request, 'transit/drs_awb_table.html', {'fl': fl, 'rl': rl})
 
@@ -390,7 +390,7 @@ def drs_in_scanning(request):
             awb = AWB.objects.get(awb=request.POST['awb'])
             if awb.awb_status.manifest.category == 'FL':
                 if awb.get_delivery_branch().pk == request.session['branch']:
-                    if awb.awb_status.status in ['DCR', 'CAN']:
+                    if awb.awb_status.status in ['DCR', 'CAN', 'SCH']:
                         request.session['message']['class'] = 'success'
                         request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
                             awb.awb_status.get_readable_choice())
