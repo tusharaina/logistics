@@ -28,8 +28,8 @@ def add_client(request):
 
         if cform.is_valid() and caform.is_valid():
             client = cform.save(commit=False)
-            client.awb_assigned_from = request.POST['client_code'] + '000000001'
-            client.awb_assigned_to = request.POST['client_code'] + '000010000'
+            client.awb_assigned_from = request.POST['client_code'] + '0000001'
+            client.awb_assigned_to = request.POST['client_code'] + '0010000'
             client.awb_left = 10000
             client.save()
             instance = caform.save(commit=False)

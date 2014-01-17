@@ -309,11 +309,14 @@ def awb_report_cc(request):
         if request.GET['client'] != '':
             filter['awb_status__manifest__client__client_code'] = request.GET['client']
         if request.GET['status'] != '':
-            filter['awb_status__status'] = request.GET['status']
+            if request.GET['status'] == 'INT':
+                filter['awb_status__status__in'] = ['TB', 'TBD', 'MTS', 'MTD']
+            else:
+                filter['awb_status__status'] = request.GET['status']
         if request.GET['start_date'] != '' and request.GET['end_date'] != '':
             filter['creation_date__range'] = (
-            request.GET['start_date'] + ' 00:00:00', request.GET['end_date'] + ' 23:59:59')
-        print filter
+                request.GET['start_date'] + ' 00:00:00', request.GET['end_date'] + ' 23:59:59')
+
         awbs = AWB.objects.filter(**filter)
         return render(request, 'awb/awb_status_update_cc.html',
                       {'awbs': awbs, 'awb_rl_remarks': AWB_RL_REMARKS, 'awb_fl_remarks': AWB_FL_REMARKS})

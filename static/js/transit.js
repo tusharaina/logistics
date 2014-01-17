@@ -26,6 +26,24 @@ $.ajaxSetup({
     }
 });
 
+
+function ajaxloader(element) {
+    $(element).html('<img src="/static/img/loader.gif" id="ajaxLoader">');
+    var height = element.height();
+    var width = $('body').width();
+    var pos = element.position();
+
+    $('#ajaxLoader').css({
+        top: height / 2 + pos.top,
+        left: width / 2,
+        position: 'absolute'
+    });
+}
+
+function closeLoader() {
+    $('#ajaxLoader').hide();
+}
+
 //function getUrlVars() {
 //    var vars = {};
 //    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
@@ -837,20 +855,3 @@ $('#awb_report_cc_form input').on('change', function () {
         }
     });
 });
-
-function ajaxloader(element) {
-    $(element).html('<img src="/static/img/loader.gif" id="ajaxLoader">');
-    var height = element.height();
-    var width = $('body').width();
-    var pos = element.position();
-
-    $('#ajaxLoader').css({
-        top: height / 2 + pos.top,
-        left: width / 2,
-        position: 'absolute'
-    });
-}
-
-function closeLoader() {
-    $('#ajaxLoader').hide();
-}

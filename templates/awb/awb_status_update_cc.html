@@ -7,6 +7,7 @@
             <th>Order Id</th>
             <th>Update Status</th>
             <th>Remarks</th>
+            <th>Reason</th>
         </tr>
         </thead>
         <tbody>
@@ -17,7 +18,8 @@
                 <td>{{ awb.order_id }}</td>
                 <td>
                     <select name="status">
-                        <option value="{{ awb.awb_status.status }}">{{ awb.awb_status.get_readable_choice }}</option>
+                        <option value="{{ awb.awb_status.status }}"
+                                style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
                         <option value="SCH">Scheduled</option>
                         <option value="CAN">Cancelled</option>
                         <option value="DBC">Deferred by Customer</option>
@@ -29,6 +31,7 @@
                 </td>
                 <td>
                     <select name="remarks">
+                        <option value="" style="display: none" selected></option>
                         {% if awb.category == 'REV' %}
                             {% for k,v in awb_rl_remarks %}
                                 <option value="{{ k }}">{{ v }}</option>
@@ -40,6 +43,7 @@
                         {% endif %}
                     </select>
                 </td>
+                <td><input type="text" name="reason"></td>
             </tr>
         {% endfor %}
         </tbody>

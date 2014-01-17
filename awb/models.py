@@ -324,8 +324,6 @@ def get_awb_status(type, status, branch, category):
         return status + ' created at ' + branch + ' branch'
 
 
-
-
 # def get_mis_fields(header):
 #     from utils.random import mis_header_into_field
 #

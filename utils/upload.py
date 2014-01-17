@@ -54,7 +54,8 @@ def upload_manifest_data(manifest_id, request):
             awb_existing.append(awb)
         except AWB.DoesNotExist:
             awb = str(worksheet.cell_value(row, header['awb'])).strip()
-            if awb[:3].upper() == client:
+            if awb[:3].upper() == client or len(awb) == 10 or awb <= int(
+                    Client.objects.get(client_code=client).awb_assigned_to):
                 try:
                     pincode = Pincode.objects.get(pincode=int(worksheet.cell_value(row, header['pincode'])))
 
