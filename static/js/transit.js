@@ -64,7 +64,7 @@ $(document).ready(function () {
     $('#end_date input').datepicker({
         dateFormat: 'yy-mm-dd'
     });
-    $('#id_scheduling_time').timepicker();
+//    $('#id_scheduling_time').timepicker(  );
     $('#id_scheduling_time').val('');
 
     if ($('#select_branch').length) {
