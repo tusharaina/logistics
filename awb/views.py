@@ -85,21 +85,20 @@ def awb_download_mis(request):
         # Write a first row with header information
         #writer.writerow(field_names)
         # Write data rows
-        header = ['AWB', 'Client', 'Order ID', 'Consignee', 'Phone', 'Pincode', 'Category', 'Amount', 'COD Amount',
-                  'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count', 'First Pending',
+        header = ['AWB', 'Client', 'Order ID', 'Consignee', 'Address', 'Phone', 'Pincode', 'Category', 'Amount',
+                  'COD Amount', 'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count', 'First Pending',
                   'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status', 'First Scan Location',
                   'CS Call Made', 'Remark', 'Reason', 'Date']
         writer.writerow(header)
         for id in awbs:
             for awb in AWB.objects.filter(pk=id):
                 writer.writerow(
-                    [awb.awb, awb.get_client(), awb.order_id, awb.customer_name, awb.phone_1, awb.pincode.pincode,
-                     awb.get_readable_choice(), awb.package_value, awb.expected_amount, awb.weight,
-                     awb.get_delivery_branch(), awb.get_pickup_branch(), awb.get_drs_count(), awb.get_first_pending(),
-                     awb.get_first_dispatch(), awb.get_last_dispatch(), awb.get_last_scan(),
-                     awb.awb_status.get_readable_choice(),
-                     awb.get_first_scan_branch(), awb.get_last_call_made_time(), awb.awb_status.remark,
-                     awb.awb_status.reason,
+                    [awb.awb, awb.get_client(), awb.order_id, awb.customer_name, awb.get_full_address(),
+                     awb.phone_1, awb.pincode.pincode, awb.get_readable_choice(), awb.package_value,
+                     awb.expected_amount, awb.weight, awb.get_delivery_branch(), awb.get_pickup_branch(),
+                     awb.get_drs_count(), awb.get_first_pending(), awb.get_first_dispatch(), awb.get_last_dispatch(),
+                     awb.get_last_scan(), awb.awb_status.get_readable_choice(), awb.get_first_scan_branch(),
+                     awb.get_last_call_made_time(), awb.awb_status.remark, awb.awb_status.reason,
                      date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
         return response
 
@@ -342,4 +341,6 @@ def awb_update_by_cc(request):
         request.session['message']['report'] = 'AWB : ' + id.awb + ' | Status : ' + id.awb_status.get_readable_choice()
         return HttpResponse(True)
     else:
+        request.session['message']['class'] = 'error'
+        request.session['message']['report'] = 'Could\'nt Updated : Server Error'
         return HttpResponse('')

@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.formats import date_format
@@ -146,6 +147,14 @@ class AWB(Time_Model):
     def get_client(self):
         return self.awb_status.manifest.client.client_name
 
+
+    def get_full_address(self):
+        address = self.address_1
+        if self.address_2 != '':
+            address += ', ' + self.address_2
+        address += ', ' + self.city
+        return address.encode('utf-8')
+
     def get_drs_count(self):
         try:
             return self.awb_history_set.exclude(drs=None).count()
@@ -258,7 +267,7 @@ class AWB_Status(Time_Model):
     updated_by = models.ForeignKey(User, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        AWB_History.objects.create(status=self.status, awb=self.awb, updated_by=self.updated_by)
+        AWB_History.objects.create(status=self.status, awb=self.awb)
         return super(AWB_Status, self).save(*args, **kwargs)
 
     def get_readable_choice(self):

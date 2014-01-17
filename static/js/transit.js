@@ -888,7 +888,7 @@ $('#awb_table_cc button').live('click', function () {
         $.ajax({
             type: 'POST',
             url: '/transit/awb/update_by_cc',
-            cache: true,
+            //cache: true,
             data: {
                 awb: awb,
                 status: status,
