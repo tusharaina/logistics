@@ -902,3 +902,18 @@ $('#awb_table_cc button').live('click', function () {
         $(this).closest('tr').fadeOut('slow');
     }
 });
+
+function update_warehouse(element) {
+    var warehouse = $(element).closest('form').find('#id_warehouse');
+    $.ajax({
+        type: 'GET',
+        url: '/client/get_warehouses',
+        cache: true,
+        data: {
+            client: $(element).val()
+        },
+        success: function (response) {
+            warehouse.html(response);
+        }
+    });
+}

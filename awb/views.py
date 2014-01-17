@@ -113,6 +113,7 @@ def manifest(request):
 def upload_manifest_file(request):
     if request.method == 'POST':
         form = UploadManifestForm(request.POST, request.FILES)
+        form.warehouse = Client_Warehouse.objects.filter(client_id=request.POST['client'])
         if form.is_valid():
             manifest = form.save(commit=False)
             file = get_manifest_filename(request.POST, request.FILES['file'])

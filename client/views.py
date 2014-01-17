@@ -21,6 +21,12 @@ def client_warehouse(request):
     return render(request, 'common/table.html', {'table': table, 'model': 'warehouse', 'url': '/client/warehouse/add'})
 
 
+def get_client_warehouses(request):
+    if request.is_ajax():
+        warehouses = Client_Warehouse.objects.filter(client_id=request.GET['client'])
+        return render(request, 'client/warehouses.html', {'warehouses': warehouses})
+
+
 def add_client(request):
     if request.method == "POST":
         cform = ClientForm(request.POST, instance=Client())
