@@ -24,38 +24,41 @@ class Client_Additional(Time_Model):
     scheduling_time = models.CharField(null=True, blank=True, max_length=10)
     pan_no = models.CharField(max_length=50, blank=True, null=True)
     tan_no = models.CharField(max_length=50, blank=True, null=True)
-    bank_name = models.CharField(max_length=50)
-    account_no = models.CharField(max_length=50)
+    bank_name = models.CharField(max_length=50, blank=True, null=True)
+    account_no = models.CharField(max_length=50, blank=True, null=True)
     city = models.ForeignKey('zoning.City', null=True, blank=True)
-    address = models.CharField(max_length=50)
-    phone = models.CharField(max_length=13)
+    address = models.CharField(max_length=50, blank=True, null=True)
+    phone = models.CharField(max_length=13, blank=True, null=True)
+
+    def __unicode__(self):
+        return self.client.client_name
 
 
 class Client_Warehouse(Time_Model):
     warehouse_name = models.CharField(max_length=50, unique=True)
     client = models.ForeignKey('client.Client', related_name='warehouse')
     pincode = models.ForeignKey('zoning.Pincode')
-    address = models.CharField(max_length=50)
-    phone = models.CharField(max_length=13)
+    address = models.CharField(max_length=50, blank=True, null=True)
+    phone = models.CharField(max_length=13, blank=True, null=True)
 
     def __unicode__(self):
         return self.warehouse_name
 
 
-class Services(Time_Model):
-    SERVICE_TYPES = (
-        ('COD', 'COD'),
-        ('PRE', 'Prepaid'),
-        ('MPU', 'Money Pickup'),
-        ('REV', 'Reverse Pickup')
-    )
-    service = models.CharField(choices=SERVICE_TYPES, max_length=3)
-    description = models.CharField(max_length=50)
-
-
-class Client_Services(Time_Model):
-    client = models.ForeignKey('Client')
-    service = models.ForeignKey('Services')
+# class Services(Time_Model):
+#     SERVICE_TYPES = (
+#         ('COD', 'COD'),
+#         ('PRE', 'Prepaid'),
+#         ('MPU', 'Money Pickup'),
+#         ('REV', 'Reverse Pickup')
+#     )
+#     service = models.CharField(choices=SERVICE_TYPES, max_length=3)
+#     description = models.CharField(max_length=50)
+#
+#
+# class Client_Services(Time_Model):
+#     client = models.ForeignKey('Client')
+#     service = models.ForeignKey('Services')
 
 
 
