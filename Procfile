@@ -1,1 +1,2 @@
-web: gunicorn_django -b 0.0.0.0:$PORT -w 3
+web:    bin/start-pgbouncer-stunnel bundle exec unicorn -p $PORT -c ./config/unicorn.rb -E $RACK_ENV
+worker: bundle exec rake worker
