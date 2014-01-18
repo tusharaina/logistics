@@ -860,7 +860,7 @@ $('#awb_report_cc_form input').on('change', function () {
 $('#awb_table_cc #status').live('change', function () {
     var awb = $(this).closest('tr').attr('id');
     var status = $(this).closest('tr').find('#status').val();
-    if (status == 'SCH') {
+    if (status == 'SCH' || status == 'DBC') {
         $(this).closest('tr').find('#reason_' + awb).datepicker({
             dateFormat: 'yy-mm-dd'
         }).focus();
@@ -875,7 +875,7 @@ $('#awb_table_cc button').live('click', function () {
     var status = $(this).closest('tr').find('#status').val();
     var remark = $(this).closest('tr').find('#remark').val();
     var reason = $(this).closest('tr').find('#reason_' + awb).val();
-    if (status == 'SCH' && reason == '') {
+    if ((status == 'SCH' || status == 'DBC') && reason == '') {
         alert('Please choose scheduled date');
         $(this).closest('tr').find('#reason_' + awb).focus();
     } else if (remark == 'Other' && reason == '') {
