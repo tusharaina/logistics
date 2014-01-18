@@ -1,9 +1,0 @@
-{% if awb %}
-    <input type="hidden" value="{{ awb.pk }}">
-    <td>{{ awb.awb }}</td>
-    <td>{{ awb.order_id }}</td>
-    <td>{{ awb.get_readable_choice }}</td>
-    <td>{{ awb.readable_status }}</td>
-    <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>
-    <td>{{ awb.awb_status.manifest.pk }}</td>
-{% endif %}
