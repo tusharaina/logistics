@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-header position-relative">
+        <button class="btn btn-info btn-small pull-right" type="button" id="{{ model }}_print_sheet">
+            Print Sheet
+        </button>
+        <h1> {{ drs.drs_id }}
+            <small><i class="icon-double-angle-right"></i> Shipment Status Update</small>
+        </h1>
+    </div>
+    <div id="get_message"></div>
+    {% if fl.count > 0 %}
+        <h4 class="blue">Forward Logistics
+            <small><i class="icon-double-angle-right"></i> Total COD Amount :
+                <strong>Rs. {{ drs.get_expected_amount }}</strong></small>
+        </h4>
+        <div class="row-fluid">
+            <div class="span12">
+                <table class="table table-bordered table-condensed table-stripped" id="awb_status_update_table">
+                    <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th class="center">
+                            <label>
+                                <input type="checkbox" checked="true" class="select_all">
+                                <span class="lbl"></span>
+                            </label>
+                        </th>
+                        <th>AWB</th>
+                        <th>Order Id</th>
+                        {#                        <th>Client</th>#}
+                        <th>Category</th>
+                        {#                        <th>Delivery Branch</th>#}
+                        {% if model == 'drs' %}
+                            <th>Expected Amount</th>
+                            <th>Collected Amount</th>
+                            <th>In-Scan</th>
+                            <th>Deferred Date</th>
+                            <th>Update Status</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for awb in fl %}
+                        <tr id="{{ awb.pk }}">
+                            <td>{{ forloop.counter }}
+                            <td class="center">
+                                <label>
+                                    <input type="checkbox" checked="true" id="{{ awb.pk }}">
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td id="awb"><a href="/transit/awb/{{ awb.pk }}" target="_blank">{{ awb.awb }}</a></td>
+                            <td>{{ awb.order_id }}</td>
+                            {#                            <td>{{ awb.awb_status.manifest.client }}</td>#}
+                            <td id="type">{{ awb.get_readable_choice }}</td>
+                            {#                            <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>#}
+                            {% if model == 'drs' %}
+                                <td id="expected_amount">{{ awb.expected_amount }}</td>
+                                <td><input class="input-small" type="text" id="collected_amount"
+                                           name="collected_amount">
+                                </td>
+                                <td>
+                                    <input type="text" class="input-small" onchange="inScanDRSAWB(this)" id="in_scan">
+                                </td>
+                                <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
+                                           onchange="update_awb_reason(this)">
+                                <td>
+                                    <select onchange="updateDRSAWBStatus(this)" id="status">
+                                        <option value="{{ awb.awb_status.status }}"
+                                                selected
+                                                style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
+                                        <option value="DEL">Delivered</option>
+                                        {#                                        <option value="SCH">Scheduled</option>#}
+                                        <option value="RET">Returned</option>
+                                        <option value="CAN">Cancelled</option>
+                                        <option value="DBC">Deferred by Customer</option>
+                                        <option value="CNA">Customer not Available</option>
+                                        <option value="DCR" style="display: none">Pending for Delivery</option>
+                                    </select>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if rl.count > 0 %}
+        <h4 class="blue">Reverse Logistics</h4>
+        <div class="row-fluid">
+            <div class="span12">
+                <table class="table table-bordered table-condensed table-stripped" id="awb_status_update_table">
+                    <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th class="center">
+                            <label>
+                                <input type="checkbox" checked="true" class="select_all">
+                                <span class="lbl"></span>
+                            </label>
+                        </th>
+                        <th>AWB</th>
+                        <th>Order Id</th>
+                        {#                        <th>Client</th>#}
+                        <th>Category</th>
+                        {#                        <th>Status</th>#}
+                        <th>DTO Branch</th>
+                        {% if model == 'drs' %}
+                            <th>In-Scan</th>
+                            <th>Deferred Date</th>
+                        {% endif %}
+                        <th>Update Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for awb in rl %}
+                        <tr id="{{ awb.pk }}">
+                            <td>{{ forloop.counter }}
+                            <td class="center">
+                                <label>
+                                    <input type="checkbox" checked="true" id="{{ awb.pk }}">
+                                    <span class="lbl"></span>
+                                </label>
+                            </td>
+                            <td id="awb"><a href="/transit/awb/{{ awb.pk }}" target="_blank">{{ awb.awb }}</a></td>
+                            <td>{{ awb.order_id }}</td>
+                            {#                            <td>{{ awb.awb_status.manifest.client }}</td>#}
+                            <td id="type">{{ awb.get_readable_choice }}</td>
+                            <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>
+                            {% if model == 'drs' %}
+                                <td><input type="text" class="input-small" onchange="inScanDRSAWB(this)"></td>
+                            {% endif %}
+                            <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
+                                       onchange="update_awb_reason(this)">
+                            <td>
+                                {% if model == 'drs' %}
+                                    <select onchange="updateDRSAWBStatus(this)" id="status">
+                                        <option value="{{ awb.awb_status.status }}"
+                                                selected
+                                                style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
+                                        {#                                        <option value="DEL">Delivered</option>#}
+                                        <option value="CAN">Cancelled</option>
+                                        <option value="DBC">Deferred by Customer</option>
+                                        <option value="CNA">Customer not Available</option>
+                                        <option value="PC" style="display: none">Pick-up Completed</option>
+                                    </select>
+                                {% else %}
+                                    {{ awb.awb_status.get_readable_choice }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+    {% if model == 'dto' %}
+        <div class="widget-main">
+            <form class="form-inline" role="form" method="post" id="{{ model }}_status_update_form">{% csrf_token %}
+                <label for="form-field-select-1">Status</label>
+                <select name="awb_status" id="awb_status">
+                    <option value="" selected style="display: none"></option>
+                    <option value="DEL">DTO'd to Client</option>
+                    <option value="RBC">Rejected by Client</option>
+                    <option value="CB">Called Back</option>
+                    {#                    <option value="DBC">Deferred by Customer</option>#}
+                    {#                    <option value="CNA">Customer not Available</option>#}
+                </select>
+                <button class="btn btn-info btn-small" type="submit">
+                    <i class="icon-ok bigger-110"></i>
+                    Update Status
+                </button>
+                {#                <button class="btn btn-info btn-small" type="button" id="drs_print_sheet">#}
+                {#                    <i class="icon-ok bigger-110"></i>#}
+                {#                    Print Sheet#}
+                {#                </button>#}
+            </form>
+        </div>
+    {% else %}
+        <div class="widget-main">
+            <form class="form-inline" role="form" method="post" id="{{ model }}_closing_km_form">{% csrf_token %}
+                <label for="form-field-select-1">Closing Km.</label>
+                <input type="text" name="closing_km" id="closing_km">
+                <button class="btn btn-info btn-small" type="button" onclick="save_drs_closing_km('{{ drs.drs_id }}')">
+                    <i class="icon-ok bigger-110"></i>
+                    Save
+                </button>
+                {#                <button class="btn btn-info btn-small" type="button" id="drs_print_sheet">#}
+                {#                    <i class="icon-ok bigger-110"></i>#}
+                {#                    Print Sheet#}
+                {#                </button>#}
+            </form>
+        </div>
+    {% endif %}
+{% endblock %}
+

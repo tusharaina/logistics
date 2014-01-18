@@ -1,0 +1,9 @@
+setup.cfg
+barcode/__init__.py
+barcode/barcode.py
+pip-egg-info/barcode.egg-info/PKG-INFO
+pip-egg-info/barcode.egg-info/SOURCES.txt
+pip-egg-info/barcode.egg-info/dependency_links.txt
+pip-egg-info/barcode.egg-info/entry_points.txt
+pip-egg-info/barcode.egg-info/requires.txt
+pip-egg-info/barcode.egg-info/top_level.txt

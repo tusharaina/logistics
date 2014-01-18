@@ -1,0 +1,13 @@
+<div class="navbar">
+    <div class="navbar-inner" style="background: #000000 !important;">
+        <div class="container-fluid">
+            <a href="/" class="brand">
+                <small><i class="icon-leaf"></i> NuvoEx Dashboard</small>
+            </a>
+            {% block userarea %}{% include "userarea.html" %}{% endblock %}
+            {% if user.is_superuser or user.profile.branch.branch_name == 'HQ' or user.profile.branch.branch_name == '' %}
+                <span id="select_branch" class="select2-container pull-right"></span>
+            {% endif %}
+        </div>
+    </div>
+</div>

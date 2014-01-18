@@ -1,0 +1,20 @@
+    <div class="page-content">
+        <form method="GET" action="/reports/cash-report">
+<input type="hidden" name="type" value="cash">
+        <label> Branch</label>
+             <select name="branch">
+                 {% for branch in branches %}
+      <option value="{{ branch.pk }}">
+          {{ branch.branch_name }}
+      </option>
+
+                 {% endfor %}
+  </select>
+
+        <label>Start</label>
+        <input type="date" name="start">
+        <label>End</label>
+        <input type="date" name="end">
+     <input type="submit" value="Submit">
+            </form>
+    </div>

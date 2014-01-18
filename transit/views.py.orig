@@ -1,0 +1,427 @@
+<<<<<<< HEAD
+from django.contrib.auth.models import User
+=======
+import os
+from datetime import datetime, timedelta
+from reportlab.lib import colors
+from reportlab.lib.units import cm, inch
+from reportlab.lib.pagesizes import letter, elevenSeventeen
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+>>>>>>> bbbf2e1b418d9fc5078d999b540c8e64db5f6ecb
+from django.shortcuts import render, HttpResponse, get_object_or_404
+from django.contrib import messages
+from internal.models import Branch, Employee, Vehicle
+from transit.models import TB, TB_History, MTS, DRS, DTO
+from transit.forms import CreateMTSForm, CreateTBForm, CreateDRSForm, CreateDTOForm
+from awb.models import AWB, AWB_History, AWB_Status
+from django_tables2 import RequestConfig
+from transit.tables import TBTable, DRSTable, MTSTable, DTOTable
+from django.db.models import F
+import json
+from awb.tables import AWBTable
+from django.contrib.auth.decorators import login_required
+from time import gmtime, strftime
+
+
+@login_required(login_url='/login')
+# Create your views here.
+
+def tb(request):
+    table = TBTable(TB.objects.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, 'common/table.html', {'table': table, 'url': 'tb/create'})
+
+
+def show_tb_form(request):
+    form = CreateTBForm()
+    return render(request, 'transit/create_tb.html', {'form': form, 'model': 'tb'})
+
+
+def ajax_in_scanning_awb(request):
+    if request.method == 'POST' and request.is_ajax():
+        try:
+            awb = AWB.objects.get(awb=request.POST['awb'])
+            awb.readable_status = awb.awb_status.get_readable_choice()
+            if awb.awb_status.status == 'ISC':
+                awb.readable_category = awb.awb_status.manifest.get_readable_choice()
+                messages.success(request, "AWB : " + str(awb.awb) + " - " + awb.readable_status)
+                return render(request, 'awb/awb_in_scanning.html', {'awb': awb})
+            else:
+                messages.error(request, "AWB : " + str(awb.awb) + " - " + awb.readable_status)
+                return render(request, 'awb/awb_in_scanning.html')
+        except AWB.DoesNotExist:
+            messages.error(request, "AWB : " + request.POST['awb'] + " - Does not exists")
+            return render(request, 'awb/awb_in_scanning.html')
+
+
+def ajax_get_tb_awbs(request):
+    if request.method == "POST" and request.is_ajax():
+        branch = Branch.objects.get(pk=int(request.POST['delivery_branch']))
+        awbs = branch.get_awbs()
+        return render(request, 'common/awb_table.html', {'awbs': awbs})
+
+def reports(request, type='generic'):
+    if not request.GET.keys():
+        type_of_awbs = zip(*AWB.AWB_TYPE)[1]
+        branches = Branch.objects.all()
+        awb_status  = zip(*AWB_Status.STATUS)[1]
+        if type=='generic':
+            return render(request, 'report_generic_input.html', {'type_of_awbs': type_of_awbs, 'branches': branches, 'awb_status':awb_status})
+        if type == 'cash-report':
+            return render(request, 'report_cash_input.html', {'branches': branches})
+    else:
+        branch = Branch.objects.all()[0] #todo change to request.user.branch
+        awbs  = AWB.objects.none()
+        print 'adfljlj'
+        if type=='generic':
+            type_of_awb = 'COD'
+            status_type = 'ISC'
+            if request.GET.get('type_of_awb'):
+                type_dict = dict(AWB.AWB_TYPE)
+                type_dict = {v:k for k,v in type_dict.items()}
+                type_of_awbs = type_dict[request.GET.get('type_of_awb')]
+            if request.GET.get('awb_status'):
+                status_dict = dict(AWB_Status.STATUS)
+                status_dict = {v:k for k,v in status_dict.items()}
+                status_type = status_dict[request.GET.get('awb_status')]
+            if request.GET.get('branch'):
+                branch = Branch.objects.get(pk=int(request.GET.get('branch')))
+
+            awbs = AWB.objects.filter(awb_status__current_branch=branch,
+                                      type_of_awb=type_of_awb, awb_status__status=status_type)
+            awbs = AWB.objects.all() #todo remove
+        elif type=='cash-report':
+            print 'adlkfj'
+            start = datetime.now()
+            end = datetime.now()
+            if request.GET.get('branch'):
+                branch = Branch.objects.get(pk=int(request.GET.get('branch')))
+            if request.GET.get('start'):
+                start = datetime.strptime(request.GET.get('start'), '%Y-%m-%d')
+            if request.GET.get('end'):
+                end = datetime.strptime(request.GET.get('end'), '%Y-%m-%d')
+            awbs = AWB.objects.all()#todo remove
+
+        doc = SimpleDocTemplate("awbs.pdf", pagesize=(31*inch, 35*inch))
+                # container for the 'Flowable' objects
+        elements = []
+        fields = AWB._meta.get_all_field_names()
+        fields.remove('awb_status')#todo later add function in models
+        fields.remove('awb_history')
+        fields.remove('creation_date')
+        fields.remove('on_update')
+        fields.remove('is_active')
+        fields.remove('id')
+        awbs = awbs.values_list(*fields)
+        data= [fields]
+        for awb in awbs:
+            data.append(list(awb))
+        print data
+        t=Table(data)
+        elements.append(t)
+        # write the document to disk
+        doc.build(elements)
+        pdf_file = open(doc.filename, 'rb+')
+        response = HttpResponse(doc, content_type='application/pdf')
+        #response['Content-Disposition'] = 'attachment; filename="awbs.pdf"'
+        response.write(pdf_file.read())
+        pdf_file.close()
+
+        os.remove(doc.filename)
+        return response
+
+def ajax_create_tb(request):
+    if request.method == "POST" and request.is_ajax():
+        tb = TB(
+            origin_branch=Branch.objects.get(pk=request.POST['origin_branch']),
+            delivery_branch=Branch.objects.get(pk=request.POST['delivery_branch']),
+            #type=request.POST['type']
+        )
+        tb.save()
+        tb_history = TB_History(
+            tb=tb,
+            branch=Branch.objects.get(pk=request.POST['origin_branch'])
+        )
+        tb_history.save()
+        awbs = json.loads(request.POST['awbs'])
+        for awb in awbs:
+            AWB_Status.objects.filter(awb=int(awb)).update(current_tb=tb, status='TB')
+            awb_history = AWB_History(
+                awb=AWB.objects.get(pk=int(awb)),
+                tb=tb
+            )
+            awb_history.save()
+        return HttpResponse(True)
+    else:
+        return HttpResponse(False)
+
+
+def mts(request):
+    table = MTSTable(MTS.objects.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, 'common/table.html', {'table': table, 'url': 'mts/create'})
+
+
+def show_mts_form(request):
+    form = CreateMTSForm()
+    return render(request, 'common/form.html', {'form': form, 'model': 'mts'})
+
+
+def ajax_get_tbs(request):
+    if request.method == "POST" and request.is_ajax():
+        tbs = TB.objects.filter(tb_history__branch_id=int(request.POST['from_branch'])).exclude(
+            delivery_branch=F('tb_history__branch'))
+        return render(request, 'transit/ajax_get_tbs.html', {'tbs': tbs})
+
+
+def ajax_create_mts(request):
+    if request.method == "POST" and request.is_ajax():
+        mts = MTS(
+            from_branch=Branch.objects.get(pk=int(request.POST['from_branch'])),
+            to_branch=Branch.objects.get(pk=int(request.POST['to_branch'])),
+            type=str(request.POST['type'])
+        )
+        mts.save()
+        tbs = json.loads(request.POST['tbs'])
+        for tb in tbs:
+            tb_history = TB_History(
+                tb=TB.objects.get(pk=int(tb)),
+                mts=mts
+            )
+            tb_history.save()
+            awb_status = AWB_Status.objects.filter(current_tb_id=int(tb), status__in=['TB', 'TBD', 'MTS', 'MTD'])
+            awb_status.update(current_mts=mts, status='MTS')
+            for status in awb_status:
+                awb_history = AWB_History(
+                    awb=status.awb,
+                    mts=mts
+                )
+                awb_history.save()
+        return HttpResponse(True)
+    else:
+        return HttpResponse(False)
+
+
+def drs(request):
+    table = DRSTable(DRS.objects.exclude(status='C'))
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, 'common/table.html', {'table': table, 'url': 'drs/create'})
+
+
+def ajax_get_drs_awbs(request):
+    if request.method == "POST" and request.is_ajax():
+        awbs = AWB.objects.filter(awb_status__status='DCR')
+        return render(request, 'transit/ajax_get_awbs.html', {'awbs': awbs})
+
+
+def ajax_create_drs(request):
+    if request.method == "POST" and request.is_ajax():
+        drs = DRS(
+            fe=User.objects.get(pk=int(request.POST['fe'])),
+            vehicle=Vehicle.objects.get(pk=int(request.POST['vehicle'])),
+        )
+        drs.save()
+        awbs = json.loads(request.POST['awbs'])
+        for awb in awbs:
+            if AWB_Status.objects.get(awb=int(awb)).manifest.category == 'FL':
+                AWB_Status.objects.filter(awb=int(awb), status__in=['DCR']).update(current_drs=drs,
+                                                                                   status='DRS')
+                awb_history = AWB_History(
+                    awb=AWB.objects.get(pk=int(awb)),
+                    drs=drs
+                )
+                awb_history.save()
+            else:
+                AWB_Status.objects.filter(awb=int(awb), status__in=['PP']).update(current_drs=drs,
+                                                                                  status='PP')
+                awb_history = AWB_History(
+                    awb=AWB.objects.get(pk=int(awb)),
+                    drs=drs
+                )
+                awb_history.save()
+        return HttpResponse(True)
+    else:
+        return HttpResponse(False)
+
+
+def tb_detail(request, tb_id):
+    table = AWBTable(AWB.objects.filter(awb_status__current_tb=tb_id))
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, 'common/table.html', {'table': table})
+
+
+def mts_detail(request, mts_id):
+    table = TBTable(TB.objects.filter(tb_history__mts=mts_id))
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, 'common/table.html', {'table': table})
+
+
+def mts_update_status(request):
+    if request.method == 'POST' and request.is_ajax():
+        mts = MTS.objects.filter(pk=int(request.POST['mts_id']))
+        mts.update(status=request.POST['status'])
+        if mts[0].status == 'D':
+            tbs = mts[0].get_tbs()
+            for tb in tbs:
+                print tb.tb_id
+                tb_history = TB_History(tb_id=tb.tb_id, branch=mts[0].to_branch)
+                tb_history.save()
+        return HttpResponse(mts[0].get_readable_choice())
+
+
+def drs_update_status(request):
+    if request.method == 'POST' and request.is_ajax():
+        drs = DRS.objects.filter(pk=int(request.POST['drs_id']))
+        drs.update(status=request.POST['status'])
+        return HttpResponse(drs[0].get_readable_choice())
+
+
+def drs_detail(request, drs_id):
+    awbs = AWB.objects.filter(awb_history__drs=drs_id)
+    return render(request, 'transit/awb_status_update.html', {'awbs': awbs, 'id': drs_id, 'model': 'drs'})
+
+
+def dto_detail(request, dto_id):
+    awbs = AWB.objects.filter(awb_history__dto=dto_id)
+    return render(request, 'transit/awb_status_update.html', {'awbs': awbs, 'id': dto_id, 'model': 'dto'})
+
+
+def drs_in_scanning(request):
+    if request.method == 'POST' and request.is_ajax():
+        awb_extra = []
+        try:
+            awb = AWB.objects.get(awb=request.POST['awb'])
+            if awb.awb_status.manifest.category == 'FL':
+                if awb.awb_status.status in ['TB', 'TBD', 'MTS', 'MTD', 'CAN', 'DCR']:
+                    AWB_Status.objects.filter(awb=awb.pk).update(status='DCR')
+                    awb.readable_category = awb.awb_status.manifest.get_readable_choice()
+                    awb.readable_status = 'Pending for Delivery'
+                    response = 'success'
+                    return render(request, 'awb/awb_in_scanning.html', {'awb': awb, 'response': response})
+            else:
+                if awb.awb_status.status in ['DR', 'PP', 'PS']:
+                    AWB_Status.objects.filter(awb=awb.pk).update(status='PP')
+                    awb.readable_category = awb.awb_status.manifest.get_readable_choice()
+                    awb.readable_status = 'Pending for Pickup'
+                    response = 'success'
+                    return render(request, 'awb/awb_in_scanning.html', {'awb': awb, 'response': response})
+        except AWB.DoesNotExist:
+            awb_extra.append(request.POST['awb'])
+            response = 'error'
+            #return render(request, 'awb/awb_in_scanning.html', {'awb_extra': awb_extra, 'response': response})
+    else:
+        form = CreateDRSForm()
+        return render(request, 'transit/drs_creation_form.html', {'form': form, 'model': 'drs'})
+
+
+def drs_get_print_sheet(request):
+    data = json.loads(request.GET['awbs'])
+    awbs = []
+    print data
+    for awb in data:
+        awbs.append(AWB.objects.get(pk=int(awb)))
+    user = request.user.get_profile()
+    drs = awbs[0].awb_status.current_drs
+    print user.branch.branch_name
+    context = {
+        'drs': drs,
+        'awbs': awbs,
+        'branch': user.branch.branch_name,
+        'datetime': strftime("%Y-%m-%d %H:%M", gmtime())
+    }
+    return render(request, 'transit/drs_print_sheet.html', context)
+
+
+def dto(request):
+    table = DTOTable(DTO.objects.exclude(status='C'))
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, 'common/table.html', {'table': table, 'url': 'dto/create'})
+
+
+def dto_in_scanning(request):
+    if request.method == 'POST' and request.is_ajax():
+        awb_extra = []
+        try:
+            awb = AWB.objects.get(awb=request.POST['awb'])
+            if awb.awb_status.manifest.category == 'RL':
+                if awb.awb_status.status in ['TB', 'TBD', 'MTS', 'MTD', 'DCR']:
+                    AWB_Status.objects.filter(awb=awb.pk).update(status='DCR')
+                    awb.readable_status = 'Pending for Delivery'
+                    response = 'success'
+                    #else:
+                    #    awb.readable_category = awb.awb_status.manifest.get_readable_choice()
+                    #    awb.readable_status = awb.awb_status.get_readable_choice()
+                    #    response = 'error'
+                    return render(request, 'awb/awb_in_scanning.html', {'awb': awb, 'response': response})
+        except AWB.DoesNotExist:
+            awb_extra.append(request.POST['awb'])
+    else:
+        form = CreateDTOForm()
+        return render(request, 'transit/drs_creation_form.html', {'form': form, 'model': 'dto'})
+
+
+def ajax_create_dto(request):
+    if request.method == "POST" and request.is_ajax():
+        dto = DTO(
+            fe=User.objects.get(pk=int(request.POST['fe'])),
+            vehicle=Vehicle.objects.get(pk=int(request.POST['vehicle'])),
+        )
+        dto.save()
+        awbs = json.loads(request.POST['awbs'])
+        for awb in awbs:
+            if AWB_Status.objects.get(awb=int(awb)).manifest.category == 'RL':
+                AWB_Status.objects.filter(awb=int(awb), status__in=['DCR']).update(current_dto=dto,
+                                                                                   status='DRS')
+                awb_history = AWB_History(
+                    awb=AWB.objects.get(pk=int(awb)),
+                    dto=dto
+                )
+                awb_history.save()
+        return HttpResponse(True)
+    else:
+        return HttpResponse(False)
+
+
+def drs_awb_cancel_scan(request):
+    if request.method == 'POST' and request.is_ajax():
+        awb = AWB.objects.get(awb=str(request.POST['awb']))
+        if awb.pk == int(request.POST['id']):
+            if awb.type == 'REV':
+                AWB_Status.objects.filter(awb=awb.pk).update(status='PC')
+            else:
+                AWB_Status.objects.filter(awb=awb.pk).update(status='DCR')
+        return HttpResponse(True)
+
+
+def drs_awb_update_status(request):
+    if request.method == 'POST' and request.is_ajax():
+        awbs = json.loads(request.POST['awbs'])
+        collected_amts = json.loads(request.POST['collected_amts'])
+        awbs_dict = dict(zip(awbs, collected_amts))
+        print awbs_dict
+        for k, v in awbs_dict.items():
+            awb = AWB.objects.get(pk=int(k))
+            if awb.type == 'REV':
+                if awb.awb_status.status in ['PC', 'DCR']:
+                    AWB_Status.objects.filter(awb=awb).update(status=str(request.POST['awb_status']))
+            else:
+                if awb.awb_status.status in ['DRS', 'DCR']:
+                    if awb.type == 'COD':
+                        AWB_Status.objects.filter(awb=awb).update(status=str(request.POST['awb_status']))
+                        AWB_Status.objects.filter(awb=awb).update(collected_amt=str(v))
+                    else:
+                        AWB_Status.objects.filter(awb=awb).update(status=str(request.POST['awb_status']))
+            if awb.awb_status.current_drs.get_awb_close_count() == awb.awb_status.current_drs.get_awb_count():
+                DRS.objects.filter(pk=awb.awb_status.current_drs.pk).update(status='C')
+        return HttpResponse(True)
+
+
+def dto_awb_update_status(request):
+    if request.method == 'POST' and request.is_ajax():
+        awbs = json.loads(request.POST['awbs'])
+        for id in awbs:
+            awb = AWB.objects.get(pk=int(id))
+            AWB_Status.objects.filter(awb=awb).update(status=str(request.POST['awb_status']))
+            if awb.awb_status.current_dto.get_awb_close_count() == awb.awb_status.current_dto.get_awb_count():
+                DTO.objects.filter(pk=awb.awb_status.current_dto.pk).update(status='C')
+    return HttpResponse(True)

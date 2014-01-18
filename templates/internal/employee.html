@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+{% block content %}
+    <a href="/internal/employee/add"><button type="button" class="btn-medium">Add Employee</button></a>
+    {% render_table table %}
+{% endblock %}

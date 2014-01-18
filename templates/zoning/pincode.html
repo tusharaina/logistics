@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+{% block content %}
+    <a href="/zoning/pincode/add"><button type="button" class="btn-medium">Add Pincode</button></a>
+    {% render_table table %}
+{% endblock %}

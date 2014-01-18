@@ -1,0 +1,255 @@
+<div class="main-container container-fluid">
+<a class="menu-toggler" id="menu-toggler" href="#"> <span class="menu-text"></span> </a>
+
+<div class="sidebar" id="sidebar">
+{#        <div class="sidebar-shortcuts" id="sidebar-shortcuts">#}
+{#            <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">#}
+{#                <button class="btn btn-small btn-success">#}
+{#                    <i class="icon-signal"></i>#}
+{#                </button>#}
+{##}
+{#                <button class="btn btn-small btn-info">#}
+{#                    <i class="icon-pencil"></i>#}
+{#                </button>#}
+{##}
+{#                <button class="btn btn-small btn-warning">#}
+{#                    <i class="icon-group"></i>#}
+{#                </button>#}
+{##}
+{#                <button class="btn btn-small btn-danger">#}
+{#                    <i class="icon-cogs"></i>#}
+{#                </button>#}
+{#            </div>#}
+{##}
+{#            <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">#}
+{#                <span class="btn btn-success"></span>#}
+{##}
+{#                <span class="btn btn-info"></span>#}
+{##}
+{#                <span class="btn btn-warning"></span>#}
+{##}
+{#                <span class="btn btn-danger"></span>#}
+{#            </div>#}
+{#        </div>#}
+<!--#sidebar-shortcuts-->
+<ul class="nav nav-list">
+<li class="active">
+    <a href="/"> <i class="icon-dashboard"></i> <span class="menu-text"> Dashboard </span> </a>
+</li>
+{% if user.is_superuser %}
+    <li>
+        <a href="#" class="dropdown-toggle"> <i class="icon-desktop"></i> <span
+                class="menu-text"> System Config </span> <b class="arrow icon-angle-down"></b> </a>
+        <ul class="submenu">
+
+            <li>
+                <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>
+                    Client Config
+                    <b class="arrow icon-angle-down"></b>
+                </a>
+                <ul class="submenu" style="display: none">
+                    <li>
+                        <a href="/client">Client </a>
+                    </li>
+                    <li>
+                        <a href="/client/warehouse">Warehouses</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" class="dropdown-toggle"> <i class="icon-desktop"></i> <span
+                        class="menu-text"> Internal Config</span> <b class="arrow icon-angle-down"></b> </a>
+                <ul class="submenu">
+                    <li>
+                        <a href="/internal/branch"> <i class="icon-double-angle-right"></i> Branch </a>
+                    </li>
+
+                    <li>
+                        <a href="/users"> <i class="icon-double-angle-right"></i> Users </a>
+                    </li>
+                    <li>
+                        <a href="/users/upload_list"> <i class="icon-double-angle-right"></i> FE Upload </a>
+                    </li>
+                    <li>
+                        <a href="/internal/vehicle"> <i class="icon-double-angle-right"></i> Vehicle </a>
+                    </li>
+                    <li>
+                        <a href="/internal/vehicle/upload_list"> <i class="icon-double-angle-right"></i> Bike Upload
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>
+                            Zoning
+                            <b class="arrow icon-angle-down"></b>
+                        </a>
+                        <ul class="submenu" style="display: none">
+                            <li>
+                                <a href="/zoning/upload">Upload File</a>
+                            </li>
+                            <li>
+                                <a href="/zoning/city">City </a>
+                            </li>
+                            <li>
+                                <a href="/zoning/pincode">Pincode </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+{% endif %}
+{% if user.profile.role != 'CL' %}
+    <li class="open">
+        <a href="#" class="dropdown-toggle"> <i class="icon-edit"></i>
+            <span class="menu-text"> Transit </span>
+            <b class="arrow icon-angle-down"></b>
+        </a>
+        <ul class="submenu">
+            {% if user.is_superuser or user.profile.role == 'OM' %}
+                <li>
+                    <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>
+                        Manifest
+                        <b class="arrow icon-angle-down"></b>
+                    </a>
+                    <ul class="submenu" style="display: none">
+                        <li>
+                            <a href="/transit/manifest/upload">Upload </a>
+                        </li>
+                        <li>
+                            <a href="/transit/manifest/report">Report </a>
+                        </li>
+                    </ul>
+                </li>
+            {% endif %}
+
+            <li>
+                <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>
+                    AWB
+                    <b class="arrow icon-angle-down"></b>
+                </a>
+                <ul class="submenu" style="display: none">
+                    <li>
+                        <a href="/transit/awb/in_scanning">In-Scanning </a>
+                    </li>
+                    <li>
+                        <a href="/transit/awb/incoming">Incoming </a>
+                    </li>
+                    <li>
+                        <a href="/transit/awb/outgoing">Outgoing </a>
+                    </li>
+                    <li>
+                        <a href="/transit/awb/print_invoice">Print Invoice </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>
+                    TB
+                    <b class="arrow icon-angle-down"></b>
+                </a>
+                <ul class="submenu" style="display: none">
+                    <li>
+                        <a href="/transit/tb/incoming">Incoming </a>
+                    </li>
+                    <li>
+                        <a href="/transit/tb/outgoing">Outgoing </a>
+                    </li>
+                    <li>
+                        <a href="/transit/tb/create">Create </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>
+                    MTS
+                    <b class="arrow icon-angle-down"></b>
+                </a>
+                <ul class="submenu" style="display: none">
+                    <li>
+                        <a href="/transit/mts/incoming">Incoming </a>
+                    </li>
+                    <li>
+                        <a href="/transit/mts/outgoing">Outgoing </a>
+                    </li>
+                    <li>
+                        <a href="/transit/mts/create">Create </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="/transit/drs"> <i class="icon-double-angle-right"></i> DRS </a>
+            </li>
+            <li>
+                <a href="/transit/drs/create"> <i class="icon-double-angle-right"></i> Create DRS </a>
+            </li>
+            <li>
+                <a href="/transit/dto"> <i class="icon-double-angle-right"></i> DTO </a>
+            </li>
+            <li>
+                <a href="/transit/dto/create"> <i class="icon-double-angle-right"></i> Create DTO </a>
+            </li>
+            <li>
+                <a href="/transit/rto"> <i class="icon-double-angle-right"></i> RTO </a>
+            </li>
+        </ul>
+    </li>
+{% endif %}
+<li>
+    {% if user.is_superuser or user.profile.role == 'OM' or user.profile.role == 'CL' or user.profile.role == 'CS' %}
+        <a href="javascript:void(0)" class="dropdown-toggle"> <i class="icon-edit"></i>
+            <span class="menu-text"> Reports </span>
+            <b class="arrow icon-angle-down"></b>
+        </a>
+
+        <ul class="submenu">
+        {#            <li>#}
+        {#                <a href="#" class="dropdown-toggle"><i class="icon-double-angle-right"></i>#}
+        {#                    Manifest#}
+        {#                    <b class="arrow icon-angle-down"></b>#}
+        {#                </a>#}
+        {#                <ul class="submenu" style="display: none">#}
+        {#                    <li>#}
+        {#                        <a href="/transit/manifest/upload">Upload </a>#}
+        {#                    </li>#}
+        {#                    <li>#}
+        {#                        <a href="/transit/manifest/in_scanning">In-Scanning </a>#}
+        {#                    </li>#}
+        {#                    <li>#}
+        {#                        <a href="/transit/manifest/report">Report </a>#}
+        {#                    </li>#}
+        {#                </ul>#}
+        {#            </li>#}
+
+        {#            <li>#}
+        {#                <a class="reports"> <i class="icon-double-angle-right"></i>Generic</a>#}
+        {#            </li>#}
+        {##}
+        {#            <li>#}
+        {#                <a class="reports"> <i class="icon-double-angle-right"></i>Cash Report</a>#}
+        {#            </li>#}
+        {##}
+        {##}
+        {#            <li>#}
+        {#                <a href="/transit/drs"> <i class="icon-double-angle-right"></i> DRS </a>#}
+        {#            </li>#}
+        <li>
+            <a href="/transit/awb/mis"> <i class="icon-double-angle-right"></i> MIS </a>
+        </li>
+        <li>
+            <a href="/transit/awb/report_cc"> <i class="icon-double-angle-right"></i> CS </a>
+        </li>
+    {% endif %}
+    </ul>
+</li>
+
+</ul>
+<!--/.nav-list-->
+
+<div class="sidebar-collapse" id="sidebar-collapse">
+    <i class="icon-double-angle-left"></i>
+</div>
+</div>
+</div>
