@@ -22,7 +22,7 @@ class CreateDRSForm(forms.ModelForm):
 
     class Meta:
         model = DRS
-        exclude = ['is_active', 'status', 'drs_id', 'branch']
+        exclude = ['is_active', 'status', 'drs_id', 'branch', 'closing_km']
 
 
 class CreateDTOForm(forms.ModelForm):

@@ -27,6 +27,7 @@ class MTSTable(tables.Table):
         exclude = ['creation_date', 'on_update', 'is_active', 'id']
         attrs = {"class": "table table-striped table-bordered table-hover"}
 
+
 class MTSOutgoingTable(tables.Table):
     tb = tables.TemplateColumn(template_code='<a href="/transit/mts/{{ record.id }}">{{ record.get_tbs_count }}</a>')
 
@@ -37,8 +38,10 @@ class MTSOutgoingTable(tables.Table):
 
 
 class DRSTable(tables.Table):
-    awb = tables.TemplateColumn(template_code='<a href="/transit/drs/{{ record.id }}">{{ record.get_awb_count }}</a>',
-                                verbose_name='AWB')
+    drs_id = tables.TemplateColumn(
+        template_code='<a href="/transit/drs/{{ record.id }}">{{ record.drs_id }}</a>', verbose_name='DRS')
+    awb = tables.TemplateColumn(
+        template_code='<a href="/transit/drs/{{ record.id }}">{{ record.get_all_awb_count }}</a>', verbose_name='AWB')
     #del_can = tables.Column(accessor='get_awb_delcan_count',verbose_name='Del/Can AWB')
     expected_amount = tables.Column(accessor='get_expected_amount')
     collected_amount = tables.Column(accessor='get_collected_amount')
@@ -52,6 +55,8 @@ class DRSTable(tables.Table):
 
 
 class DTOTable(tables.Table):
+    dto_id = tables.TemplateColumn(
+        template_code='<a href="/transit/dto/{{ record.id }}">{{ record.dto_id }}</a>', verbose_name='DTO')
     awb = tables.TemplateColumn(template_code='<a href="/transit/dto/{{ record.id }}">{{ record.get_awb_count }}</a>')
     #action = tables.TemplateColumn(
     #    template_code='<div class="hidden-phone visible-desktop btn-group"><button class="btn btn-mini btn-info" id="editDTO"><i class="icon-edit bigger-120"></i></button></div>')

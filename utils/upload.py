@@ -81,9 +81,9 @@ def upload_manifest_data(manifest_id, request):
                                     bind[key] = 'PRE'
                         elif key == 'expected_amount':
                             if worksheet.cell_value(row, header[key]):
-                                bind[key] = float(worksheet.cell_value(row, header[key]))
+                                bind[key] = int(worksheet.cell_value(row, header[key]))
                             else:
-                                bind[key] = float(0)
+                                bind[key] = int(0)
                         elif worksheet.cell_value(row, header[key]):
                             if type(worksheet.cell_value(row, header[key])) is float:
                                 bind[key] = float(worksheet.cell_value(row, header[key]))

@@ -23,11 +23,11 @@
                                 style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
                         <option value="SCH">Scheduled</option>
                         <option value="CAN">Cancelled</option>
-                        <option value="DBC">Deferred by Customer</option>
-                        <option value="CNA">Customer not Available</option>
-                        {% if awb.category != 'REV' %}
-                            <option value="RET">Returned</option>
-                        {% endif %}
+                        {#                        <option value="DBC">Deferred by Customer</option>#}
+                        {#                        <option value="CNA">Customer not Available</option>#}
+                        {#                        {% if awb.category != 'REV' %}#}
+                        {#                            <option value="RET">Returned</option>#}
+                        {#                        {% endif %}#}
                     </select>
                 </td>
                 <td>

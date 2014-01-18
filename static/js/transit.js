@@ -123,6 +123,15 @@ $(document).ready(function () {
             return false;
         }
     });
+
+    if ($('#awb_status_update_table').length) {
+        $('#awb_status_update_table tbody tr').map(function () {
+            id = this.id;
+            $(this).find('#reason_' + id).datepicker({
+                dateFormat: 'yy-mm-dd'
+            })
+        }).get();
+    }
 });
 
 function get_drs_awbs(sort, element) {
@@ -352,6 +361,7 @@ $("#create_drs_form").submit(function (e) {
             data: {
                 fe: $('#id_fe').val(),
                 vehicle: $('#id_vehicle').val(),
+                opening_km: $('#id_opening_km').val(),
                 fl: JSON.stringify(fl),
                 rl: JSON.stringify(rl)
             },
@@ -766,8 +776,18 @@ $('#collected_amount').live('keypress', function (e) {
         }
     }
 });
+function update_awb_reason(element) {
+    var status = $(element).closest('tr').find('#status');
+    if (status.val() == 'DBC') {
+        updateDRSAWBStatus(status);
+    } else {
+        alert("Please change Status to 'Deferred by Customer'");
+    }
+}
 
 function updateDRSAWBStatus(element) {
+    var awb = $(element).closest('tr').attr('id');
+    var reason = $("#reason_" + awb).val();
     if ($(element).closest('tr').find('#collected_amount').length) {
         var coll_amt = $(element).closest('tr').find('#collected_amount').val()
     } else {
@@ -779,20 +799,24 @@ function updateDRSAWBStatus(element) {
         alert('Please enter collected amount');
         $(element).closest('tr').find('#collected_amount').focus();
     } else if ($(element).val() != 'DEL' &&
-        $(element).closest('tr').find('#in_scan').val() != $(element).closest('tr').find('#awb').html()
+        $(element).closest('tr').find('#in_scan').val() != $(element).closest('tr').find('#awb a').html()
         && $(element).closest('tr').find('#type').html() != 'Reverse Pickup') {
         alert('Please In-Scan Shipment first');
         $(element).closest('tr').find('#in_scan').focus();
-    } else {
+    } else if ($(element).val() == 'DBC' && reason == '') {
+        alert('Please select Deferred Date');
+        $("#reason_" + awb).focus();
+    }
+    else {
         if (confirm('Are you sure want to change status ?')) {
             $.ajax({
                 type: 'POST',
                 url: '/transit/drs/drs_awb_status_update',
-                cache: true,
                 data: {
-                    awb: $(element).closest('tr').attr('id'),
+                    awb: awb,
                     status: $(element).val(),
-                    coll_amt: coll_amt
+                    coll_amt: coll_amt,
+                    reason: reason
                 },
                 success: function (response) {
                     if (response == 'True') {
@@ -881,7 +905,7 @@ $('#awb_table_cc button').live('click', function () {
     } else if (remark == 'Other' && reason == '') {
         alert('Please enter a reason');
         $(this).closest('tr').find('#reason_' + awb).focus();
-    } else if (remark == '') {
+    } else if (remark == '' && status != 'SCH') {
         alert('Please select a remark');
         $(this).closest('tr').find('#remark').focus();
     } else {
@@ -916,4 +940,25 @@ function update_warehouse(element) {
             warehouse.html(response);
         }
     });
+}
+
+
+function save_drs_closing_km(drs_id) {
+    closing_km = $('#drs_closing_km_form #closing_km').val();
+    if (closing_km != '') {
+        $.ajax({
+            type: 'GET',
+            url: '/transit/drs/update_closing_km',
+            cache: true,
+            data: {
+                drs_id: drs_id,
+                closing_km: closing_km
+            },
+            success: function (response) {
+                get_message();
+            }
+        });
+    } else {
+        alert('Please enter closing km');
+    }
 }

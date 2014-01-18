@@ -4,13 +4,16 @@
         <button class="btn btn-info btn-small pull-right" type="button" id="{{ model }}_print_sheet">
             Print Sheet
         </button>
-        <h1> {{ id }}
+        <h1> {{ drs.drs_id }}
             <small><i class="icon-double-angle-right"></i> Shipment Status Update</small>
         </h1>
     </div>
     <div id="get_message"></div>
     {% if fl.count > 0 %}
-        <h4 class="blue">Forward Logistics</h4>
+        <h4 class="blue">Forward Logistics
+            <small><i class="icon-double-angle-right"></i> Total COD Amount :
+                <strong>Rs. {{ drs.get_expected_amount }}</strong></small>
+        </h4>
         <div class="row-fluid">
             <div class="span12">
                 <table class="table table-bordered table-condensed table-stripped" id="awb_status_update_table">
@@ -32,6 +35,7 @@
                             <th>Expected Amount</th>
                             <th>Collected Amount</th>
                             <th>In-Scan</th>
+                            <th>Deferred Date</th>
                             <th>Update Status</th>
                         {% endif %}
                     </tr>
@@ -56,14 +60,18 @@
                                 <td><input class="input-small" type="text" id="collected_amount"
                                            name="collected_amount">
                                 </td>
-                                <td><input type="text" class="input-small" onchange="inScanDRSAWB(this)" id="in_scan">
-                                </td>
                                 <td>
-                                    <select onchange="updateDRSAWBStatus(this)">
+                                    <input type="text" class="input-small" onchange="inScanDRSAWB(this)" id="in_scan">
+                                </td>
+                                <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
+                                           onchange="update_awb_reason(this)">
+                                <td>
+                                    <select onchange="updateDRSAWBStatus(this)" id="status">
                                         <option value="{{ awb.awb_status.status }}"
                                                 selected
                                                 style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
                                         <option value="DEL">Delivered</option>
+                                        {#                                        <option value="SCH">Scheduled</option>#}
                                         <option value="RET">Returned</option>
                                         <option value="CAN">Cancelled</option>
                                         <option value="DBC">Deferred by Customer</option>
@@ -102,6 +110,7 @@
                         <th>DTO Branch</th>
                         {% if model == 'drs' %}
                             <th>In-Scan</th>
+                            <th>Deferred Date</th>
                         {% endif %}
                         <th>Update Status</th>
                     </tr>
@@ -124,9 +133,11 @@
                             {% if model == 'drs' %}
                                 <td><input type="text" class="input-small" onchange="inScanDRSAWB(this)"></td>
                             {% endif %}
+                            <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
+                                       onchange="update_awb_reason(this)">
                             <td>
                                 {% if model == 'drs' %}
-                                    <select onchange="updateDRSAWBStatus(this)">
+                                    <select onchange="updateDRSAWBStatus(this)" id="status">
                                         <option value="{{ awb.awb_status.status }}"
                                                 selected
                                                 style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
@@ -162,6 +173,21 @@
                 <button class="btn btn-info btn-small" type="submit">
                     <i class="icon-ok bigger-110"></i>
                     Update Status
+                </button>
+                {#                <button class="btn btn-info btn-small" type="button" id="drs_print_sheet">#}
+                {#                    <i class="icon-ok bigger-110"></i>#}
+                {#                    Print Sheet#}
+                {#                </button>#}
+            </form>
+        </div>
+    {% else %}
+        <div class="widget-main">
+            <form class="form-inline" role="form" method="post" id="{{ model }}_closing_km_form">{% csrf_token %}
+                <label for="form-field-select-1">Closing Km.</label>
+                <input type="text" name="closing_km" id="closing_km">
+                <button class="btn btn-info btn-small" type="button" onclick="save_drs_closing_km('{{ drs.drs_id }}')">
+                    <i class="icon-ok bigger-110"></i>
+                    Save
                 </button>
                 {#                <button class="btn btn-info btn-small" type="button" id="drs_print_sheet">#}
                 {#                    <i class="icon-ok bigger-110"></i>#}

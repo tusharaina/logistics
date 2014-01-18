@@ -77,6 +77,8 @@ class DRS(Time_Model):
     drs_id = models.CharField(max_length=15, verbose_name='DRS')
     fe = models.ForeignKey(User)
     vehicle = models.ForeignKey('internal.Vehicle')
+    opening_km = models.CharField(max_length=20, null=True, blank=True)
+    closing_km = models.CharField(max_length=20, null=True, blank=True)
     branch = models.ForeignKey('internal.Branch')
     status = models.CharField(choices=DRS_STATUS, default='O', max_length=1)
 
@@ -85,6 +87,9 @@ class DRS(Time_Model):
 
     def get_awb_count(self):
         return self.awb_status_set.all().count()
+
+    def get_all_awb_count(self):
+        return self.awb_history_set.all().count()
 
     def get_awb_close_count(self):
         return self.awb_status_set.filter(status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET', 'SCH']).count()
@@ -142,3 +147,7 @@ class RTO(Time_Model):
         return dict(self.DTO_STATUS)[self.status]
 
 
+def close_drs(id):
+    drs = DRS.objects.get(pk=id)
+    if drs.get_awb_close_count() == drs.get_awb_count() and drs.closing_km != '':
+        DRS.objects.filter(pk=id).update(status='C')
