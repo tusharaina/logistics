@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-import os, xlrd, re
+import os, xlrd, re,barcode
 from django.contrib.auth.models import User
 from django.db import models
 from django.dispatch import receiver

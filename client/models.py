@@ -21,7 +21,7 @@ class Client(Time_Model):
 class Client_Additional(Time_Model):
     client = models.OneToOneField('client.Client', related_name='additional', unique=True)
     email = models.EmailField(max_length=50, blank=True, null=True)
-    scheduling_time = models.CharField(null=True, blank=True, max_length=10)
+    #scheduling_time = models.CharField(null=True, blank=True, max_length=10)
     pan_no = models.CharField(max_length=50, blank=True, null=True)
     tan_no = models.CharField(max_length=50, blank=True, null=True)
     bank_name = models.CharField(max_length=50, blank=True, null=True)
