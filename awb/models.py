@@ -72,6 +72,7 @@ class AWB(Time_Model):
     category = models.CharField(choices=AWB_TYPE, max_length=3, null=True, blank=True)
     preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
     preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
+    barcode = models.FileField(upload_to='awb/barcode/', null=True, blank=True)
 
     def get_readable_choice(self):
         return dict(self.AWB_TYPE)[self.category]

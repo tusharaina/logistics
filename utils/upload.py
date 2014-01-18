@@ -54,8 +54,8 @@ def upload_manifest_data(manifest_id, request):
             awb_existing.append(awb)
         except AWB.DoesNotExist:
             awb = str(worksheet.cell_value(row, header['awb'])).strip()
-            if awb[:3].upper() == client and len(awb) == 10 and awb[3:] <= Client.objects.get(
-                    client_code=client).awb_assigned_to[3:]:
+            if awb[:3].upper() == client:
+                #and len(awb) == 10 and awb[3:] <= Client.objects.get(client_code=client).awb_assigned_to[3:]:
                 try:
                     pincode = Pincode.objects.get(pincode=int(worksheet.cell_value(row, header['pincode'])))
 
@@ -93,6 +93,9 @@ def upload_manifest_data(manifest_id, request):
                             bind[key] = ''
 
                     awb = AWB(**bind)
+                    # bar = barcode.get('ean13', awb.awb, writer=ImageWriter())
+                    # filename = bar.save('ean13')
+                    # awb.barcode = 'awb/barcode/' + filename
                     awb.save()
                     awb_status = AWB_Status(awb=awb, manifest=manifest)
                     awb_status.save()
