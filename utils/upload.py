@@ -1,8 +1,15 @@
 from __future__ import unicode_literals
-import os, xlrd, re
+import os
+import re
+from time import gmtime, strftime
+
+import xlrd
+import barcode
+from barcode.writer import ImageWriter
 from django.contrib.auth.models import User
 from django.db import models
 from django.dispatch import receiver
+
 from awb.models import AWB_Status, AWB, Manifest
 from internal.models import Branch, Branch_Pincode, Employee, Vehicle
 from zoning.models import Pincode, City
@@ -10,7 +17,6 @@ from utils.constants import MANIFEST_HEADER_DICT
 from utils.random import get_manifest_header_dict
 from logistics.settings import MEDIA_ROOT
 from client.models import Client
-from time import gmtime, strftime
 
 
 def get_manifest_filename(data, file):
@@ -62,6 +68,7 @@ def upload_manifest_data(manifest_id, request):
                     bind = {}
                     if request.POST['category'] == 'RL':
                         bind['category'] = 'REV'
+                        bind['barcode'] = generate_barcode(awb)
                     else:
                         bind['category'] = ''
                     for key in header.keys():
@@ -84,6 +91,13 @@ def upload_manifest_data(manifest_id, request):
                                 bind[key] = int(worksheet.cell_value(row, header[key]))
                             else:
                                 bind[key] = int(0)
+                        elif key == 'priority':
+                            if worksheet.cell_value(row, header[key]).lower().strip() == 'high':
+                                bind[key] = 'H'
+                            if worksheet.cell_value(row, header[key]).lower().strip() == 'low':
+                                bind[key] = 'L'
+                            else:
+                                bind[key] = 'N'
                         elif worksheet.cell_value(row, header[key]):
                             if type(worksheet.cell_value(row, header[key])) is float:
                                 bind[key] = float(worksheet.cell_value(row, header[key]))
@@ -93,9 +107,6 @@ def upload_manifest_data(manifest_id, request):
                             bind[key] = ''
 
                     awb = AWB(**bind)
-                    # bar = barcode.get('ean13', awb.awb, writer=ImageWriter())
-                    # filename = bar.save('ean13')
-                    # awb.barcode = 'awb/barcode/' + filename
                     awb.save()
                     awb_status = AWB_Status(awb=awb, manifest=manifest)
                     awb_status.save()
@@ -286,4 +297,13 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
     if not old_file == new_file:
         if os.path.isfile(old_file.path):
             os.remove(old_file.path)
+
+
+def generate_barcode(text):
+    writer = ImageWriter()
+    options = dict(module_height=9.0, text_distance=0.5, font_size=7, quiet_zone=2.0)
+    ean = barcode.get('code39', text, writer=writer)
+    dir = 'awb/barcode/'
+    ean.save(MEDIA_ROOT + dir + text, options)
+    return dir + text + '.png'
 

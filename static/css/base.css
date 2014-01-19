@@ -41,3 +41,7 @@ input[type="checkbox"] {
 #awb_report_cc_form select[name='status'] {
     width: 200px;
 }
+
+#awb_report_cc_form #priority {
+    width: 100px;
+}

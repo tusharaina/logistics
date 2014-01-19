@@ -26,7 +26,8 @@ MANIFEST_HEADER_DICT = {
     'package_price': ['package price'],
     'preferred_pickup_date': ['preferred pickup date'],
     'preferred_pickup_time': ['preferred pickup time'],
-    'category': ['category', 'coddod', 'payment mode']
+    'category': ['category', 'coddod', 'payment mode'],
+    'priority': ['priority', 'awb priority']
 }
 
 MIS_HEADER = ['AWB', 'Client', 'Order ID', 'Consignee', 'Phone', 'Address', 'Category', 'Amount', 'COD Amount',

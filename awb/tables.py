@@ -51,7 +51,7 @@ class AWBRLTable(tables.Table):
 
     class Meta:
         model = AWB
-        fields = ('awb', 'order_id', 'customer_name', 'address', 'pincode')
+        fields = ('awb', 'order_id', 'customer_name', 'address', 'pincode','barcode')
         attrs = {"class": "table table-striped table-bordered table-hover table-condensed"}
 
 

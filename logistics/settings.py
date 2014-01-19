@@ -67,6 +67,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -102,7 +104,7 @@ DATABASES = {
 #        'NAME': 'nuvoex',
 #        'USER': 'nuvoex',
 #        'PASSWORD': '1',
-#    }Calcutta
+#    }
 #}
 SESSION_ENGINE = 'redis_sessions.session'
 SESSION_REDIS_UNIX_DOMAIN_SOCKET_PATH = '/var/run/redis/redis.sock'

@@ -319,7 +319,8 @@ def awb_report_cc(request):
         if request.GET['start_date'] != '' and request.GET['end_date'] != '':
             filter['creation_date__range'] = (
                 request.GET['start_date'] + ' 00:00:00', request.GET['end_date'] + ' 23:59:59')
-
+        if request.GET['priority'] != '':
+            filter['priority'] = request.GET['priority']
         awbs = AWB.objects.filter(**filter)
         return render(request, 'awb/awb_status_update_cc.html',
                       {'awbs': awbs, 'awb_rl_remarks': AWB_RL_REMARKS, 'awb_fl_remarks': AWB_FL_REMARKS})

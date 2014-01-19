@@ -3,3 +3,4 @@ def get_last_rowid(model):
         return model.objects.latest('pk').pk
     except model.DoesNotExist:
         return 0
+

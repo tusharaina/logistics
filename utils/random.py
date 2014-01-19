@@ -63,11 +63,14 @@ def get_manifest_header_dict(val, header, col):
     if val in header['category']:
         dict['category'] = col
 
-    if val in header['preferred_pickup_date']:
-        dict['preferred_pickup_date'] = col
+    if val in header['priority']:
+        dict['priority'] = col
 
-    if val in header['preferred_pickup_time']:
-        dict['preferred_pickup_time'] = col
+    # if val in header['preferred_pickup_date']:
+    #     dict['preferred_pickup_date'] = col
+    #
+    # if val in header['preferred_pickup_time']:
+    #     dict['preferred_pickup_time'] = col
 
     return dict
 

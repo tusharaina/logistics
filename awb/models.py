@@ -49,6 +49,9 @@ class AWB(Time_Model):
                 ('REV', 'Reverse Pickup'),
                 ('PRE', 'Prepaid'),
                 ('MPU', 'Money Pickup'))
+    AWB_PRIORITY = (('L', 'LOW'),
+                    ('N', 'Normal'),
+                    ('H', 'High'))
     awb = models.CharField(max_length=15, unique=True, verbose_name='AWB')
     order_id = models.CharField(max_length=20, null=True, blank=True)
     invoice_no = models.CharField(max_length=50, null=True, blank=True)
@@ -70,9 +73,11 @@ class AWB(Time_Model):
     package_sku = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=200, null=True, blank=True)
     category = models.CharField(choices=AWB_TYPE, max_length=3, null=True, blank=True)
-    preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
-    preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
-    barcode = models.FileField(upload_to='awb/barcode/', null=True, blank=True)
+    priority = models.CharField(choices=AWB_PRIORITY, max_length=1, default='N')
+    barcode = models.ImageField(upload_to='awb/barcode/', null=True, blank=True)
+    # preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
+    # preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
+
 
     def get_readable_choice(self):
         return dict(self.AWB_TYPE)[self.category]
@@ -311,6 +316,7 @@ class AWB_History(Time_Model):
 
 
 def get_awb_status(type, status, branch, awb):
+    print status
     if type == 'status':
         try:
             if awb.awb_status.updated_by.profile.role == 'CS':
@@ -331,7 +337,7 @@ def get_awb_status(type, status, branch, awb):
         elif status == 'RET':
             return prefix + 'Return'
         elif status == 'CAN':
-            return prefix + 'Cancelled'
+            return prefix + 'Cancelled : ' + awb.awb_status.remark
         elif status == 'DBC':
             return prefix + 'Deferred by Customer for Date : ' + awb.awb_status.reason
         elif status == 'CNA':

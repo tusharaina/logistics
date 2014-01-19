@@ -13,29 +13,27 @@
 <body>
 <div id="wrapper">
     <header>
-        <div class="heading"><h1>Reverse-PickUp List</h1></div>
+        <div class="heading"><h2>REVERSE PICKUP LIST</h2></div>
     </header>
     <table id="table1" cellspacing="0" cellpadding="0">
         <thead>
         <tr>
             <th width="10px">Sr.No.</th>
-            <th width="200px">Bar Code</th>
-            <th width="200px">AWB No:</th>
+            <th>Bar Code</th>
+            {#            <th width="200px">AWB No:</th>#}
             <th width="300px">Address</th>
-            <th width="40px">Pincode</th>
+            <th width="50px">Pincode</th>
         </tr>
         </thead>
         <tbody>
         {% for awb in awbs %}
-            {% if forloop.counter <= 28 %}
-                <tr>
-                    <td>{{ forloop.counter }} </td>
-                    <td></td>
-                    <td>{{ awb.awb }} </td>
-                    <td style="font-size: 12px">{{ awb.get_full_address }} </td>
-                    <td> {{ awb.pincode.pincode }} </td>
-                </tr>
-            {% endif %}
+            <tr>
+                <td>{{ forloop.counter }} </td>
+                <td><img src="/media/{{ awb.barcode }}"></td>
+                {#                <td>{{ awb.awb }} </td>#}
+                <td>{{ awb.get_full_address }} </td>
+                <td> {{ awb.pincode.pincode }} </td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
