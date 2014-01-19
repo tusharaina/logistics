@@ -74,7 +74,7 @@ class AWB(Time_Model):
     description = models.CharField(max_length=200, null=True, blank=True)
     category = models.CharField(choices=AWB_TYPE, max_length=3, null=True, blank=True)
     priority = models.CharField(choices=AWB_PRIORITY, max_length=1, default='N')
-    barcode = models.ImageField(upload_to='awb/barcode/', null=True, blank=True)
+    barcode = models.ImageField(upload_to='/barcodes/', null=True, blank=True)
     # preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
     # preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
 
@@ -363,7 +363,8 @@ def get_awb_status(type, status, branch, awb):
 
 def get_rto_awbs(del_branch, curr_branch=None):
     if curr_branch is not None:
-        return AWB.objects.filter(category__in=['COD','PRE'])
+        return AWB.objects.filter(category__in=['COD', 'PRE'])
+
 # def get_mis_fields(header):
 #     from utils.random import mis_header_into_field
 #
