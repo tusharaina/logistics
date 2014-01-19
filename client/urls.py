@@ -1,5 +1,4 @@
-from django.conf.urls import patterns, include, url
-from django.views.generic import TemplateView
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns('client.views',
                        #url(r'home$',TemplateView.as_view(template_name='client/pincode.html'), name="home"),
