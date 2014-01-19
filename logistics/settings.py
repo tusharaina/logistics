@@ -106,15 +106,15 @@ DATABASES = {
 #        'PASSWORD': '1',
 #    }
 #}
-SESSION_ENGINE = 'redis_sessions.session'
-SESSION_REDIS_UNIX_DOMAIN_SOCKET_PATH = '/var/run/redis/redis.sock'
-
-CACHES = {
-    'default': {
-        'BACKEND': 'redis_cache.RedisCache',
-        'LOCATION': '/var/run/redis/redis.sock',
-    },
-}
+# SESSION_ENGINE = 'redis_sessions.session'
+# SESSION_REDIS_UNIX_DOMAIN_SOCKET_PATH = '/var/run/redis/redis.sock'
+#
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'redis_cache.RedisCache',
+#         'LOCATION': '/var/run/redis/redis.sock',
+#     },
+# }
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
