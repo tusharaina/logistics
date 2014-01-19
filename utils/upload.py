@@ -304,6 +304,6 @@ def generate_barcode(text):
     options = dict(module_height=9.0, text_distance=0.5, font_size=7, quiet_zone=2.0)
     ean = barcode.get('code39', text, writer=writer)
     dir = 'awb/barcode/'
-    ean.save(MEDIA_ROOT + dir + text, options)
-    return dir + text + '.png'
+    return ean.save(MEDIA_ROOT + dir + text, options)
+    #return dir + text + '.png'
 
