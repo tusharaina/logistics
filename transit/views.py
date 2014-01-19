@@ -1,19 +1,21 @@
 import os
 import json
 from datetime import datetime
+from time import gmtime, strftime
+
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table
 from django.shortcuts import render, HttpResponse
 from django.contrib.auth.models import User
+from django_tables2 import RequestConfig
+from django.contrib.auth.decorators import login_required
+
 from internal.models import Branch, Vehicle
 from .models import TB, TB_History, MTS, DRS, DTO, close_drs
 from .forms import CreateMTSForm, CreateTBForm, CreateDRSForm, CreateDTOForm
-from awb.models import AWB, AWB_History, AWB_Status
-from django_tables2 import RequestConfig
+from awb.models import AWB, AWB_History, AWB_Status, get_rto_awbs
 from .tables import TBTable, DRSTable, MTSTable, DTOTable, MTSOutgoingTable
 from awb.tables import AWBTable
-from django.contrib.auth.decorators import login_required
-from time import gmtime, strftime
 from utils import generateId
 
 
@@ -73,11 +75,12 @@ def ajax_get_tb_awbs(request):
         fl = AWB.objects.filter(category__in=['COD', 'PRE'],
                                 pincode__branch_pincode__branch=request.POST['delivery_branch'],
                                 awb_status__current_branch=request.session['branch'],
-                                awb_status__status__in=['ISC', 'CAN', 'ITR'])
+                                awb_status__status__in=['ISC'])
         rl = AWB.objects.filter(category='REV',
                                 awb_status__manifest__branch_id=request.POST['delivery_branch'],
                                 awb_status__current_branch=request.session['branch'],
-                                awb_status__status__in=['ISC', 'CAN', 'ITR', 'PC'])
+                                awb_status__status__in=['ISC'])
+        rto = get_rto_awbs(request.POST['delivery_branch'], request.session['branch'])
         return render(request, 'transit/tb_awb_table.html', {'fl': fl, 'rl': rl})
 
 

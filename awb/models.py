@@ -337,7 +337,7 @@ def get_awb_status(type, status, branch, awb):
         elif status == 'RET':
             return prefix + 'Return'
         elif status == 'CAN':
-            return prefix + 'Cancelled : ' + awb.awb_status.remark
+            return prefix + 'Cancelled'
         elif status == 'DBC':
             return prefix + 'Deferred by Customer for Date : ' + awb.awb_status.reason
         elif status == 'CNA':
@@ -361,6 +361,9 @@ def get_awb_status(type, status, branch, awb):
         return status + ' created at ' + branch + ' branch'
 
 
+def get_rto_awbs(del_branch, curr_branch=None):
+    if curr_branch is not None:
+        return AWB.objects.filter(category__in=['COD','PRE'])
 # def get_mis_fields(header):
 #     from utils.random import mis_header_into_field
 #

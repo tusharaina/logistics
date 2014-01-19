@@ -151,3 +151,5 @@ def close_drs(id):
     drs = DRS.objects.get(pk=id)
     if drs.get_awb_close_count() == drs.get_awb_count() and drs.closing_km != '':
         DRS.objects.filter(pk=id).update(status='C')
+
+
