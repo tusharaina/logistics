@@ -41,7 +41,7 @@ def add_client(request):
             instance = caform.save(commit=False)
             instance.client_id = client.pk
             instance.save()
-            return HttpResponseRedirect('/client')
+            return HttpResponseRedirect('/client/')
     else:
         cform = ClientForm()
         caform = ClientAdditionalForm()
