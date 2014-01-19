@@ -29,7 +29,7 @@
         {% for awb in awbs %}
             <tr>
                 <td>{{ forloop.counter }} </td>
-                <td><img src="/static/barcodes/{{ awb.awb }}.png"></td>
+                <td><img src="/static/{{ awb.barcode }}"></td>
                 {#                <td>{{ awb.awb }} </td>#}
                 <td>{{ awb.get_full_address }} </td>
                 <td> {{ awb.pincode.pincode }} </td>

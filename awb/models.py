@@ -74,7 +74,7 @@ class AWB(Time_Model):
     description = models.CharField(max_length=200, null=True, blank=True)
     category = models.CharField(choices=AWB_TYPE, max_length=3, null=True, blank=True)
     priority = models.CharField(choices=AWB_PRIORITY, max_length=1, default='N')
-    barcode = models.ImageField(upload_to='/barcodes/', null=True, blank=True)
+    barcode = models.ImageField(upload_to='/staticfiles/barcodes/', null=True, blank=True)
     # preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
     # preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
 
