@@ -15,7 +15,7 @@ from internal.models import Branch, Branch_Pincode, Employee, Vehicle
 from zoning.models import Pincode, City
 from utils.constants import MANIFEST_HEADER_DICT
 from utils.random import get_manifest_header_dict
-from logistics.settings import MEDIA_ROOT, STATIC_ROOT
+from logistics.settings import MEDIA_ROOT
 from client.models import Client
 
 
@@ -68,7 +68,7 @@ def upload_manifest_data(manifest_id, request):
                     bind = {}
                     if request.POST['category'] == 'RL':
                         bind['category'] = 'REV'
-                        #bind['barcode'] = generate_barcode(awb)
+                        bind['barcode'] = generate_barcode(awb)
                     else:
                         bind['category'] = ''
                     for key in header.keys():
@@ -304,7 +304,6 @@ def generate_barcode(text):
     writer = ImageWriter()
     options = dict(module_height=9.0, text_distance=0.5, font_size=7, quiet_zone=2.0)
     ean = barcode.get('code39', text, writer=writer)
-    dir = 'barcodes/'
-    ean.save(STATIC_ROOT + dir + text, options)
-    return dir + text + '.png'
+    dir = 'awb/barcode/'
+    return ean.save(MEDIA_ROOT + dir + text, options)
 
