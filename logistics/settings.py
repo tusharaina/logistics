@@ -66,7 +66,8 @@ if not os.environ.has_key('DATABASE_URL'):
     #local
     #os.environ['DATABASE_URL'] = 'postgres://nuvo:1@localhost/logistics'
     #live
-    os.environ['DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
+    os.environ[
+        'DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
     #test
     #os.environ['DATABASE_URL'] = 'postgres://idlrtcknznmgcz:3h4JbXCc-uZcyszS_tOyD-dnT2@ec2-54-204-21-178.compute-1.amazonaws.com/d67g2km220h4dc'
 DATABASES = {
