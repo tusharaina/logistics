@@ -64,10 +64,9 @@ import dj_database_url
 
 if not os.environ.has_key('DATABASE_URL'):
     #local
-    #os.environ['DATABASE_URL'] = 'postgres://nuvo:1@localhost/logistics'
+    os.environ['DATABASE_URL'] = 'postgres://nuvo:1@localhost/logistics'
     #live
-    os.environ[
-        'DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
+    #os.environ['DATABASE_URL'] = 'postgres://jicbvmwmbwskco:NpD3QXSn26OyyNQfzqpbkbRUqe@ec2-107-20-191-205.compute-1.amazonaws.com/dbd54pl1797ldj'
     #test
     #os.environ['DATABASE_URL'] = 'postgres://idlrtcknznmgcz:3h4JbXCc-uZcyszS_tOyD-dnT2@ec2-54-204-21-178.compute-1.amazonaws.com/d67g2km220h4dc'
 DATABASES = {
@@ -123,14 +122,20 @@ EMAIL_PORT = 587
 INSTALLED_APPS += ('storages',)
 
 if not DEBUG:
+    DEFAULT_FILE_STORAGE = 'logistics.s3utils.MediaRootS3BotoStorage'
+    STATICFILES_STORAGE = 'logistics.s3utils.StaticRootS3BotoStorage'
+
     AWS_S3_SECURE_URLS = False       # use http instead of https
     AWS_QUERYSTRING_AUTH = False
     AWS_ACCESS_KEY_ID = 'AKIAII7EQ245A6NNADJQ'
     AWS_SECRET_ACCESS_KEY = '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'
     AWS_STORAGE_BUCKET_NAME = 'technomaniac'
+
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
     S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
     STATIC_URL = S3_URL + 'static/'
     MEDIA_URL = S3_URL + 'media/'
     ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
+    AWS_LOCATION = 'static'
