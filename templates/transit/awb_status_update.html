@@ -11,8 +11,12 @@
     <div id="get_message"></div>
     {% if fl.count > 0 %}
         <h4 class="blue">Forward Logistics
-            <small><i class="icon-double-angle-right"></i> Total COD Amount :
-                <strong>Rs. {{ drs.get_expected_amount }}</strong></small>
+            <small style="color: #000000" id="drs_total_cash"><i class="icon-double-angle-right"></i>
+                Total Cash: Rs. <strong id="{{ drs.drs_id }}"></strong>
+            </small>
+            <small style="color: #000000" id="drs_collected_cash"><i class="icon-double-angle-right"></i>
+                Collected Cash: Rs. <strong id="{{ drs.drs_id }}"></strong>
+            </small>
         </h4>
         <div class="row-fluid">
             <div class="span12">
@@ -33,10 +37,11 @@
                         {#                        <th>Delivery Branch</th>#}
                         {% if model == 'drs' %}
                             <th>Expected Amount</th>
+                            <th>Update Status</th>
+                            <th>Deferred Date</th>
                             <th>Collected Amount</th>
                             <th>In-Scan</th>
-                            <th>Deferred Date</th>
-                            <th>Update Status</th>
+
                         {% endif %}
                     </tr>
                     </thead>
@@ -57,27 +62,34 @@
                             {#                            <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>#}
                             {% if model == 'drs' %}
                                 <td id="expected_amount">{{ awb.expected_amount }}</td>
-                                <td><input class="input-small" type="text" id="collected_amount"
-                                           name="collected_amount">
-                                </td>
                                 <td>
-                                    <input type="text" class="input-small" onchange="inScanDRSAWB(this)" id="in_scan">
+                                    {% if awb.awb_status.status == 'DRS' %}
+                                        <select onchange="updateDRSAWBStatus(this)" id="status">
+                                            <option value="{{ awb.awb_status.status }}"
+                                                    selected
+                                                    style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
+                                            <option value="DEL">Delivered</option>
+                                            <option value="CAN">Cancelled</option>
+                                            <option value="DBC">Deferred by Customer</option>
+                                            <option value="CNA">Customer not Available</option>
+                                            <option value="DCR" style="display: none">Pending for Delivery</option>
+                                        </select>
+                                    {% else %}
+                                        <select disabled>
+                                            <option value="{{ awb.awb_status.status }}"
+                                                    selected>{{ awb.awb_status.get_readable_choice }}</option>
+                                        </select>
+                                    {% endif %}
                                 </td>
                                 <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
-                                           onchange="update_awb_reason(this)">
+                                           onchange="update_awb_reason(this)" disabled>
                                 <td>
-                                    <select onchange="updateDRSAWBStatus(this)" id="status">
-                                        <option value="{{ awb.awb_status.status }}"
-                                                selected
-                                                style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
-                                        <option value="DEL">Delivered</option>
-                                        {#                                        <option value="SCH">Scheduled</option>#}
-                                        <option value="RET">Returned</option>
-                                        <option value="CAN">Cancelled</option>
-                                        <option value="DBC">Deferred by Customer</option>
-                                        <option value="CNA">Customer not Available</option>
-                                        <option value="DCR" style="display: none">Pending for Delivery</option>
-                                    </select>
+                                    <input class="input-small" type="text" id="collected_amount"
+                                           name="collected_amount" disabled>
+                                </td>
+                                <td>
+                                    <input type="text" class="input-small" onchange="inScanDRSAWB(this)" id="in_scan"
+                                           disabled>
                                 </td>
                             {% endif %}
                         </tr>
@@ -109,10 +121,12 @@
                         {#                        <th>Status</th>#}
                         <th>DTO Branch</th>
                         {% if model == 'drs' %}
-                            <th>In-Scan</th>
+                            <th>Update Status</th>
                             <th>Deferred Date</th>
+                            <th>In-Scan</th>
+                        {% else %}
+                            <th>Status</th>
                         {% endif %}
-                        <th>Update Status</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -129,28 +143,35 @@
                             <td>{{ awb.order_id }}</td>
                             {#                            <td>{{ awb.awb_status.manifest.client }}</td>#}
                             <td id="type">{{ awb.get_readable_choice }}</td>
-                            <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>
-                            {% if model == 'drs' %}
-                                <td><input type="text" class="input-small" onchange="inScanDRSAWB(this)"></td>
-                            {% endif %}
-                            <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
-                                       onchange="update_awb_reason(this)">
+                            <td>{{ awb.get_delivery_branch.branch_name }}</td>
                             <td>
-                                {% if model == 'drs' %}
+                                {% if awb.awb_status.status == 'PP' %}
                                     <select onchange="updateDRSAWBStatus(this)" id="status">
                                         <option value="{{ awb.awb_status.status }}"
                                                 selected
                                                 style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
-                                        {#                                        <option value="DEL">Delivered</option>#}
+                                        <option value="PC">Pick-up Completed</option>
                                         <option value="CAN">Cancelled</option>
                                         <option value="DBC">Deferred by Customer</option>
                                         <option value="CNA">Customer not Available</option>
                                         <option value="PC" style="display: none">Pick-up Completed</option>
                                     </select>
                                 {% else %}
-                                    {{ awb.awb_status.get_readable_choice }}
+                                    <select disabled>
+                                        <option value="{{ awb.awb_status.status }}"
+                                                selected>{{ awb.awb_status.get_readable_choice }}</option>
+                                    </select>
                                 {% endif %}
                             </td>
+
+                            {% if model == 'drs' %}
+                                <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
+                                           onchange="update_awb_reason(this)" disabled>
+                                <td><input type="text" class="input-small" id="in_scan" onchange="inScanDRSAWB(this)"
+                                           disabled></td>
+                            {% else %}
+                                <td>{{ awb.awb_status.get_readable_choice }}</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                     </tbody>

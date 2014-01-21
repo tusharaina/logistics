@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from internal.models import Branch, Vehicle
 from .models import TB, TB_History, MTS, DRS, DTO, close_drs
 from .forms import CreateMTSForm, CreateTBForm, CreateDRSForm, CreateDTOForm
-from awb.models import AWB, AWB_History, AWB_Status, get_rto_awbs
+from awb.models import AWB, AWB_History, AWB_Status
 from .tables import TBTable, DRSTable, MTSTable, DTOTable, MTSOutgoingTable
 from awb.tables import AWBTable
 from utils import generateId
@@ -79,8 +79,8 @@ def ajax_get_tb_awbs(request):
         rl = AWB.objects.filter(category='REV',
                                 awb_status__manifest__branch_id=request.POST['delivery_branch'],
                                 awb_status__current_branch=request.session['branch'],
-                                awb_status__status__in=['ISC'])
-        rto = get_rto_awbs(request.POST['delivery_branch'], request.session['branch'])
+                                awb_status__status__in=['ISC', 'PC'])
+        #rto = get_rto_awbs(request.POST['delivery_branch'], request.session['branch'])
         return render(request, 'transit/tb_awb_table.html', {'fl': fl, 'rl': rl})
 
 
@@ -317,8 +317,8 @@ def ajax_create_drs(request):
             branch=Branch.objects.get(pk=int(request.session['branch']))
         )
         drs.save()
-        fl = json.loads(request.POST['fl'])
-        rl = json.loads(request.POST['rl'])
+        fl = list(set(json.loads(request.POST['fl'])))
+        rl = list(set(json.loads(request.POST['rl'])))
         for awb in fl:
             awb_obj = AWB.objects.get(pk=int(awb))
             if awb_obj.category == 'REV':
@@ -376,17 +376,17 @@ def drs_update_status(request):
 
 
 def drs_detail(request, drs_id):
-    fl = AWB.objects.filter(awb_history__drs=drs_id).exclude(category='REV')
-    rl = AWB.objects.filter(awb_history__drs=drs_id, category='REV')
+    fl = AWB.objects.filter(awb_status__current_drs=drs_id).exclude(category='REV').order_by('category')
+    rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category')
 
     return render(request, 'transit/awb_status_update.html',
                   {'fl': fl, 'rl': rl, 'drs': DRS.objects.get(pk=drs_id), 'model': 'drs'})
 
 
 def dto_detail(request, dto_id):
-    rl = AWB.objects.filter(awb_history__dto=dto_id)
+    rl = AWB.objects.filter(awb_status__current_dto=dto_id)
     return render(request, 'transit/awb_status_update.html',
-                  {'rl': rl, 'id': DTO.objects.get(pk=dto_id).dto_id, 'model': 'dto'})
+                  {'rl': rl, 'id': DTO.objects.get(pk=dto_id).dto_id, 'model': 'dto'}).order_by('awb')
 
 
 def drs_in_scanning(request):
@@ -396,7 +396,7 @@ def drs_in_scanning(request):
             awb = AWB.objects.get(awb=request.POST['awb'])
             if awb.awb_status.manifest.category == 'FL':
                 if awb.get_delivery_branch().pk == request.session['branch']:
-                    if awb.awb_status.status in ['DCR', 'CAN', 'SCH', 'DBC']:
+                    if awb.awb_status.status in ['DCR', 'CAN', 'SCH', 'DBC', 'CNA']:
                         request.session['message']['class'] = 'success'
                         request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
                             awb.awb_status.get_readable_choice())
@@ -437,14 +437,9 @@ def drs_in_scanning(request):
 
 
 def drs_get_print_sheet(request):
-    data = json.loads(request.GET['awbs'])
-    awbs = []
-    #print data
-    for awb in data:
-        awbs.append(AWB.objects.get(pk=int(awb)))
-
-        #user = request.user.get_profile()
-    drs = awbs[1].awb_status.current_drs
+    data = list(set(json.loads(request.GET['awbs'])))
+    awbs = AWB.objects.filter(pk__in=data).order_by('category')
+    drs = awbs[0].awb_status.current_drs
     #print user.branch.branch_name
     context = {
         'drs': drs,
@@ -458,8 +453,17 @@ def drs_get_print_sheet(request):
     return render(request, 'transit/drs_print_sheet.html', context)
 
 
+def drs_get_cash(request):
+    if request.is_ajax():
+        drs = DRS.objects.get(drs_id=request.GET['drs'])
+        if request.GET['type'] == 'total':
+            return HttpResponse(drs.get_expected_amount())
+        else:
+            return HttpResponse(drs.get_collected_amount())
+
+
 def dto_get_print_sheet(request):
-    data = json.loads(request.GET['awbs'])
+    data = list(set(json.loads(request.GET['awbs'])))
     awbs = []
     #print data
     for awb in data:
@@ -548,7 +552,7 @@ def ajax_create_dto(request):
             branch=Branch.objects.get(pk=int(request.session['branch']))
         )
         dto.save()
-        awbs = json.loads(request.POST['awbs'])
+        awbs = list(set(json.loads(request.POST['awbs'])))
         for awb in awbs:
             if AWB_Status.objects.get(awb=int(awb)).manifest.category == 'RL':
                 AWB_Status.objects.filter(awb=int(awb)).update(current_dto=dto,
@@ -580,11 +584,11 @@ def drs_awb_cancel_scan(request):
                 if awb.get_delivery_branch().pk == request.session['branch']:
                     AWB_Status.objects.filter(awb=awb.pk).update(status='DCR', current_branch=request.session['branch'],
                                                                  updated_by=request.user)
-                    #AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'])
+                    AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'])
                 else:
                     AWB_Status.objects.filter(awb=awb.pk).update(status='PC', current_branch=request.session['branch'],
                                                                  updated_by=request.user)
-                    #AWB_History.objects.create(awb=awb, status='PC', branch_id=request.session['branch'])
+                    AWB_History.objects.create(awb=awb, status='PC', branch_id=request.session['branch'])
                 request.session['message']['class'] = 'success'
                 request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: Pick-up Completed" + \
                                                        " | DTO Branch: " + \
@@ -592,12 +596,13 @@ def drs_awb_cancel_scan(request):
                 close_drs(awb.awb_status.current_drs.pk)
                 return HttpResponse('PC')
             else:
-                AWB_Status.objects.filter(awb=awb.pk).update(status='DCR', current_branch=request.session['branch'],
+                AWB_Status.objects.filter(awb=awb.pk).update(status=request.POST['status'],
+                                                             current_branch=request.session['branch'],
                                                              updated_by=request.user)
-                #AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'])
+                AWB_History.objects.create(awb=awb, status=request.POST['status'], branch_id=request.session['branch'])
                 request.session['message']['class'] = 'success'
                 request.session['message']['report'] = "AWB: " + str(
-                    awb.awb) + " | Status: Pending for Delivery"
+                    awb.awb) + " | Status: " + awb.awb_status.get_readable_choice()
                 close_drs(awb.awb_status.current_drs.pk)
                 return HttpResponse('DCR')
         else:
@@ -642,8 +647,7 @@ def dto_awb_update_status(request):
                                                           updated_by=request.user)
             else:
                 AWB_Status.objects.filter(awb=awb).update(status='RET')
-            AWB_History.objects.create(awb=awb, branch_id=request.session['branch'], status=request.POST['awb_status'],
-                                       updated_by=request.user)
+            AWB_History.objects.create(awb=awb, branch_id=request.session['branch'], status=request.POST['awb_status'])
             if awb.awb_status.current_dto.get_awb_close_count() == awb.awb_status.current_dto.get_awb_count():
                 DTO.objects.filter(pk=awb.awb_status.current_dto.pk).update(status='C')
         return HttpResponse(True)
@@ -652,22 +656,26 @@ def dto_awb_update_status(request):
 def drs_awb_status_update(request):
     if request.method == 'POST' and request.is_ajax():
         request.session['message'] = {}
+        if 'reason' in request.POST:
+            reason = request.POST['reason']
+        else:
+            reason = ''
         awb = AWB.objects.get(pk=int(request.POST['awb']))
         if awb.category == 'REV':
             AWB_Status.objects.filter(awb=awb.pk).update(status=str(request.POST['status']),
-                                                         reason=request.POST['reason'], updated_by=request.user)
+                                                         reason=reason, updated_by=request.user)
         else:
             if awb.category == 'COD':
                 if request.POST['coll_amt'] != '':
                     AWB_Status.objects.filter(awb=awb.pk).update(status=str(request.POST['status']),
                                                                  collected_amt=float(request.POST['coll_amt']),
-                                                                 reason=request.POST['reason'], updated_by=request.user)
+                                                                 reason=reason, updated_by=request.user)
                 else:
                     AWB_Status.objects.filter(awb=awb.pk).update(status=str(request.POST['status']),
-                                                                 reason=request.POST['reason'], updated_by=request.user)
+                                                                 reason=reason, updated_by=request.user)
             else:
                 AWB_Status.objects.filter(awb=awb.pk).update(status=str(request.POST['status']),
-                                                             reason=request.POST['reason'], updated_by=request.user)
+                                                             reason=reason, updated_by=request.user)
         AWB_History.objects.create(awb=awb, status=str(request.POST['status']), branch_id=request.session['branch'])
         request.session['message']['class'] = 'success'
         request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(

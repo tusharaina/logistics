@@ -68,7 +68,7 @@ def upload_manifest_data(manifest_id, request):
                     bind = {}
                     if request.POST['category'] == 'RL':
                         bind['category'] = 'REV'
-                        bind['barcode'] = generate_barcode(awb)
+                        #bind['barcode'] = generate_barcode(awb)
                     else:
                         bind['category'] = ''
                     for key in header.keys():
@@ -230,7 +230,8 @@ def upload_user_list_file(file):
                     username=username,
                     first_name=first_name,
                     last_name=last_name.strip(),
-                    password=password
+                    password=password,
+                    is_staff=True
                 )
                 user.save()
                 profile = Employee(
@@ -303,7 +304,7 @@ def generate_barcode(text):
     writer = ImageWriter()
     options = dict(module_height=9.0, text_distance=0.5, font_size=7, quiet_zone=2.0)
     ean = barcode.get('code39', text, writer=writer)
-    dir = '/barcodes/'
+    dir = 'barcodes/'
     ean.save(STATIC_ROOT + dir + text, options)
     return dir + text + '.png'
 

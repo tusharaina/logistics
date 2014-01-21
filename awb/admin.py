@@ -9,12 +9,25 @@ class AWBAdmin(admin.ModelAdmin):
 
 
 class AWB_StatusAdmin(admin.ModelAdmin):
-    list_display = ('awb', 'status', 'current_branch')
-    search_fields = ('awb', 'current_branch', 'current_tb')
+    list_display = (
+        'awb', 'status', 'current_branch')
+    search_fields = ['awb__awb', 'current_branch__branch_name', 'current_tb__tb_id', 'current_drs__drs_id',
+                     'current_mts__mts_id']
+    list_filter = ['current_branch__branch_name', 'current_tb__tb_id', 'current_drs__drs_id',
+                   'current_mts__mts_id']
+
+
+class AWB_HistoryAdmin(admin.ModelAdmin):
+    list_display = (
+        'awb', 'status', 'branch', 'drs', 'tb', 'mts', 'dto')
+    search_fields = ['awb__awb', 'branch__branch_name', 'tb__tb_id', 'drs__drs_id',
+                     'mts__mts_id']
+    list_filter = ['branch__branch_name', 'tb__tb_id', 'drs__drs_id',
+                   'mts__mts_id']
 
 
 admin.site.register(AWB, AWBAdmin)
 admin.site.register(AWB_Status, AWB_StatusAdmin)
-# admin.site.register(AWB_History)
+admin.site.register(AWB_History, AWB_HistoryAdmin)
 admin.site.register(Manifest)
 

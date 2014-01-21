@@ -82,6 +82,9 @@ class DRS(Time_Model):
     branch = models.ForeignKey('internal.Branch')
     status = models.CharField(choices=DRS_STATUS, default='O', max_length=1)
 
+    def __unicode__(self):
+        return self.drs_id
+
     def get_readable_choice(self):
         return dict(self.DRS_STATUS)[self.status]
 
@@ -95,12 +98,13 @@ class DRS(Time_Model):
         return self.awb_status_set.filter(status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET', 'SCH']).count()
 
     def get_expected_amount(self):
-        exp_amt = self.awb_status_set.exclude(manifest__category='RL').aggregate(
-            expected_amount=models.Sum('awb__expected_amount'))['expected_amount']
+        exp_amt = self.awb_status_set.filter(manifest__category='FL').exclude(status__in=['CAN', 'CNA', 'DBC', 'RET']) \
+            .aggregate(expected_amount=models.Sum('awb__expected_amount'))['expected_amount']
         return exp_amt if exp_amt > 0 else '0.00'
 
     def get_collected_amount(self):
-        return self.awb_status_set.aggregate(collected_amt=models.Sum('collected_amt'))['collected_amt']
+        coll_amt = self.awb_status_set.aggregate(collected_amt=models.Sum('collected_amt'))['collected_amt']
+        return coll_amt if coll_amt is not None else 0
 
 
 class DTO(Time_Model):
@@ -149,7 +153,7 @@ class RTO(Time_Model):
 
 def close_drs(id):
     drs = DRS.objects.get(pk=id)
-    if drs.get_awb_close_count() == drs.get_awb_count() and drs.closing_km != '':
+    if drs.get_awb_close_count() == drs.get_awb_count() and drs.closing_km != None:
         DRS.objects.filter(pk=id).update(status='C')
 
 

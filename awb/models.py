@@ -77,7 +77,8 @@ class AWB(Time_Model):
     barcode = models.ImageField(upload_to='/staticfiles/barcodes/', null=True, blank=True)
     # preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
     # preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
-
+    def get_priority(self):
+        return dict(self.AWB_PRIORITY)[self.priority]
 
     def get_readable_choice(self):
         return dict(self.AWB_TYPE)[self.category]
@@ -94,7 +95,7 @@ class AWB(Time_Model):
         else:
             return ''
 
-    def get_awb_history(self):
+    def get_awb_history(self, internal=True):
         hist_dict = {}
         awb_hist = self.awb_history_set.order_by('-creation_date')
         i = 0
@@ -105,43 +106,43 @@ class AWB(Time_Model):
                     hist_dict[i]['branch'] = h.branch.branch_name
                 except AttributeError:
                     hist_dict[i]['branch'] = ''
-                hist_dict[i]['status'] = get_awb_status('status', h.status, hist_dict[i]['branch'], self)
-                hist_dict[i]['time'] = h.creation_date
+                hist_dict[i]['status'] = get_awb_status('status', h.status, hist_dict[i]['branch'], self, internal)
+                hist_dict[i]['time'] = date_format(h.creation_date, "SHORT_DATETIME_FORMAT")
                 i = i + 1
 
             if h.tb != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.tb.origin_branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('tb', h.tb.tb_id, hist_dict[i]['branch'], self)
-                hist_dict[i]['time'] = h.creation_date
+                hist_dict[i]['status'] = get_awb_status('tb', h.tb.tb_id, hist_dict[i]['branch'], self, internal)
+                hist_dict[i]['time'] = date_format(h.creation_date, "SHORT_DATETIME_FORMAT")
                 i = i + 1
 
             if h.mts != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.mts.from_branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('mts', h.mts.mts_id, hist_dict[i]['branch'], self)
-                hist_dict[i]['time'] = h.creation_date
+                hist_dict[i]['status'] = get_awb_status('mts', h.mts.mts_id, hist_dict[i]['branch'], self, internal)
+                hist_dict[i]['time'] = date_format(h.creation_date, "SHORT_DATETIME_FORMAT")
                 i = i + 1
 
             if h.drs != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.drs.branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('drs', h.drs.drs_id, hist_dict[i]['branch'], self)
-                hist_dict[i]['time'] = h.creation_date
+                hist_dict[i]['status'] = get_awb_status('drs', h.drs.drs_id, hist_dict[i]['branch'], self, internal)
+                hist_dict[i]['time'] = date_format(h.creation_date, "SHORT_DATETIME_FORMAT")
                 i = i + 1
 
             if h.dto != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.dto.branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('dto', h.dto.dto_id, hist_dict[i]['branch'], self)
-                hist_dict[i]['time'] = h.creation_date
+                hist_dict[i]['status'] = get_awb_status('dto', h.dto.dto_id, hist_dict[i]['branch'], self, internal)
+                hist_dict[i]['time'] = date_format(h.creation_date, "SHORT_DATETIME_FORMAT")
                 i = i + 1
 
             if h.rto != None:
                 hist_dict[i] = {}
                 hist_dict[i]['branch'] = h.rto.branch.branch_name
-                hist_dict[i]['status'] = get_awb_status('rto', h.rto.rto_id, hist_dict[i]['branch'], self)
-                hist_dict[i]['time'] = h.creation_date
+                hist_dict[i]['status'] = get_awb_status('rto', h.rto.rto_id, hist_dict[i]['branch'], self, internal)
+                hist_dict[i]['time'] = date_format(h.creation_date, "SHORT_DATETIME_FORMAT")
                 i = i + 1
 
         return hist_dict
@@ -315,8 +316,11 @@ class AWB_History(Time_Model):
     branch = models.ForeignKey('internal.Branch', null=True, blank=True)
 
 
-def get_awb_status(type, status, branch, awb):
-    print status
+def get_awb_status(type, status, branch, awb, internal):
+    if internal:
+        branch_name = branch
+    else:
+        branch_name = get_branch_name(branch)
     if type == 'status':
         try:
             if awb.awb_status.updated_by.profile.role == 'CS':
@@ -328,12 +332,12 @@ def get_awb_status(type, status, branch, awb):
         if status == 'DR':
             return 'Data Received'
         elif status == 'ISC':
-            return 'In-Scanned at ' + branch + ' branch'
+            return 'In-Scanned at ' + branch_name + ' branch'
         elif status == 'DCR':
             if awb.category == 'REV':
-                return 'Pending for DTO at ' + branch + ' branch'
+                return 'Pending for DTO at ' + branch_name + ' branch'
             else:
-                return 'Pending for Delivery at ' + branch + ' branch'
+                return 'Pending for Delivery at ' + branch_name + ' branch'
         elif status == 'RET':
             return prefix + 'Return'
         elif status == 'CAN':
@@ -343,30 +347,56 @@ def get_awb_status(type, status, branch, awb):
         elif status == 'CNA':
             return prefix + 'Customer not Available'
         elif status == 'CB':
-            return prefix + 'Called Back at ' + branch + ' branch'
+            return prefix + 'Called Back at ' + branch_name + ' branch'
         elif status == 'RBC':
             return prefix + 'Rejected by Client'
         elif status == 'DEL':
             if awb.category == 'REV':
-                return "DTO'd to Client"
+                if internal:
+                    return "DTO'd to Client"
+                else:
+                    return 'Excepted by Client'
             else:
                 return 'Delivered'
         elif status == 'PC':
-            return 'Pickup Completed at ' + branch + ' branch'
+            return 'Pickup Completed at ' + branch_name + ' branch'
         elif status == 'SCH':
             return prefix + 'Scheduled for Date : ' + awb.awb_status.reason
         else:
             return status
     else:
-        return status + ' created at ' + branch + ' branch'
+        if internal:
+            return status + ' created at ' + branch_name + ' branch'
+        else:
+            if status[:2] == 'TB':
+                return 'Transit Bag Created : In-Transit to ' + get_branch_name(
+                    str(awb.get_delivery_branch().branch_name)) + ' branch'
+            elif status[:2] == 'MT':
+                return ''
+            elif status[:2] == 'DR':
+                if awb.category == 'REV':
+                    return 'Pending for Pickup'
+                else:
+                    return 'Dispatched'
+            elif status[:2] == 'DT':
+                return 'Dispatched to client'
+            elif status[:2] == 'RT':
+                return 'Dispatched for RTO to client'
 
 
 def get_rto_awbs(del_branch, curr_branch=None):
     if curr_branch is not None:
         return AWB.objects.filter(category__in=['COD', 'PRE'])
 
+
 # def get_mis_fields(header):
 #     from utils.random import mis_header_into_field
 #
 #     fields = mis_header_into_field(header)
 
+def get_branch_name(branch):
+    BRANCH_DICT = {'LXM': 'Laxminagar', 'SKT': 'Saket', 'GG1': 'Gurgaon', 'RAJ': 'Rajouri'}
+    if branch in BRANCH_DICT:
+        return BRANCH_DICT[branch]
+    else:
+        return branch

@@ -9,9 +9,10 @@ urlpatterns = patterns('awb.views',
                        url(r'^awb/mis$', 'awb_generate_mis', name='awb_generate_mis'),
                        url(r'^awb/mis/download$', 'awb_download_mis', name='awb_download_mis'),
                        url(r'^awb/report_cc$', 'awb_report_cc', name='awb_report_cc'),
-                        url(r'^awb/update_by_cc$', 'awb_update_by_cc', name='awb_update_by_cc'),
+                       url(r'^awb/update_by_cc$', 'awb_update_by_cc', name='awb_update_by_cc'),
                        url(r'^awb/field_update$', 'awb_field_update', name='awb_field_update'),
                        url(r'^awb/(\d+)$', 'awb_history', name='awb_history'),
+                       url(r'^tracking/awb/(\w+)$', 'awb_history_external', name='awb_history_external'),
                        url(r'^awb/status_update$', 'awb_status_update', name='status_update$'),
                        url(r'^manifest/report$', 'manifest', name='show_manifest'),
                        url(r'^manifest/upload$', 'upload_manifest_file', name='upload_manifest_file'),
@@ -20,7 +21,9 @@ urlpatterns = patterns('awb.views',
                        url(r'^manifest/(\d+)$', 'manifest_detail', name='manifest_detail'),
                        #url(r'^manifest/(\d+)/invoice$', 'manifest_invoice', name='manifest_invoice'),
                        url(r'^awb/print_invoice_sheet$', 'awb_print_invoice_sheet', name='print_invoice_sheet'),
-                       url(r'^search/(?P<extra>.*)$', 'search_awb', name='search_awb'),
+                       url(r'^search(?P<extra>.*)$', 'search_awb', name='search_awb'),
+                       url(r'^tracking(?P<awbs>.*)$', 'search_awb_external', name='search_awb_external'),
+
 )
 
 urlpatterns += transit_urls

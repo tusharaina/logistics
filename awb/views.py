@@ -1,10 +1,17 @@
 from __future__ import unicode_literals
+from time import gmtime, strftime
+import json
+import csv
+import re
+
 from django_tables2 import RequestConfig
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib import messages
 from django.utils.formats import date_format
+from django.core import serializers
+
 from utils.upload import get_manifest_filename, upload_manifest_data
 from utils.constants import AWB_STATUS, AWB_FL_REMARKS, AWB_RL_REMARKS
 from .forms import UploadManifestForm
@@ -13,8 +20,6 @@ from .models import AWB, Manifest, AWB_Status, AWB_History
 from client.models import Client_Warehouse, Client
 from internal.models import Branch, Branch_Pincode
 from transit.models import TB, MTS
-from time import gmtime, strftime
-import json, csv, re
 
 
 @login_required(login_url='/login')
@@ -58,6 +63,15 @@ def awb_history(request, awb_id):
                   {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
 
 
+def awb_history_external(request, awb_id):
+    data = {}
+    awb = AWB.objects.get(awb=awb_id)
+    data['details'] = serializers.serialize("json", AWB.objects.filter(awb=awb_id))
+    data['history'] = awb.get_awb_history(False)
+    data['pincode'] = awb.pincode.pincode
+    return HttpResponse(json.dumps(data), content_type="application/json")
+
+
 def awb_generate_mis(request):
     if request.method == 'POST' and request.POST['start_date'] != '' and request.POST['end_date'] != '':
         start_date = request.POST['start_date'] + ' 00:00:00'
@@ -67,14 +81,15 @@ def awb_generate_mis(request):
                                       creation_date__range=(start_date, end_date))
         else:
             awbs = AWB.objects.filter(creation_date__range=(start_date, end_date))
+        request.session['awb_mis'] = [awb.pk for awb in awbs]
         return render(request, 'awb/awb_generate_mis.html', {'awbs': awbs, 'clients': Client.objects.all()})
     else:
         return render(request, 'awb/awb_generate_mis.html', {'clients': Client.objects.all()})
 
 
 def awb_download_mis(request):
-    if request.method == 'GET':
-        awbs = json.loads(request.GET['awbs'])
+    if request.method == 'GET' and 'awb_mis' in request.session:
+        # awbs = json.loads(request.POST['awbs'])
         # Create the HttpResponse object with the appropriate CSV header.
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="MIS_"' + str(strftime("%Y-%m-%d_%H-%M-%S",
@@ -85,21 +100,23 @@ def awb_download_mis(request):
         # Write a first row with header information
         #writer.writerow(field_names)
         # Write data rows
-        header = ['AWB', 'Client', 'Order ID', 'Consignee', 'Address', 'Phone', 'Pincode', 'Category', 'Amount',
-                  'COD Amount', 'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count', 'First Pending',
-                  'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status', 'First Scan Location',
-                  'CS Call Made', 'Remark', 'Reason', 'Date']
+        header = ['AWB', 'Client', 'Order ID', 'Priority', 'Consignee', 'Address', 'Phone', 'Pincode', 'Category',
+                  'Amount', 'COD Amount', 'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count',
+                  'First Pending', 'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status',
+                  'First Scan Location', 'CS Call Made', 'Remark', 'Reason', 'Date']
         writer.writerow(header)
-        for id in awbs:
-            for awb in AWB.objects.filter(pk=id):
-                writer.writerow(
-                    [awb.awb, awb.get_client(), awb.order_id, awb.customer_name, awb.get_full_address(),
-                     awb.phone_1, awb.pincode.pincode, awb.get_readable_choice(), awb.package_value,
-                     awb.expected_amount, awb.weight, awb.get_delivery_branch(), awb.get_pickup_branch(),
-                     awb.get_drs_count(), awb.get_first_pending(), awb.get_first_dispatch(), awb.get_last_dispatch(),
-                     awb.get_last_scan(), awb.awb_status.get_readable_choice(), awb.get_first_scan_branch(),
-                     awb.get_last_call_made_time(), awb.awb_status.remark, awb.awb_status.reason,
-                     date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
+        for id in request.session['awb_mis']:
+            awb = AWB.objects.get(pk=id)
+            writer.writerow(
+                [awb.awb, awb.get_client(), awb.order_id, awb.get_priority(), awb.customer_name,
+                 awb.get_full_address(),
+                 awb.phone_1, awb.pincode.pincode, awb.get_readable_choice(), awb.package_value,
+                 awb.expected_amount, awb.weight, awb.get_delivery_branch(), awb.get_pickup_branch(),
+                 awb.get_drs_count(), awb.get_first_pending(), awb.get_first_dispatch(), awb.get_last_dispatch(),
+                 awb.get_last_scan(), awb.awb_status.get_readable_choice(), awb.get_first_scan_branch(),
+                 awb.get_last_call_made_time(), awb.awb_status.remark, awb.awb_status.reason,
+                 date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
+        del request.session['awb_mis']
         return response
 
 
@@ -235,7 +252,6 @@ def manifest_invoice_download(request):
 
 
 def search_awb(request, extra=''):
-    print request.GET
     if extra == 'advanced_search':
         return render(request, 'advance_search.html')
     if request.GET.get('type'):
@@ -267,10 +283,19 @@ def search_awb(request, extra=''):
     else:
         awbs = re.split('[\s,;]+', request.GET.get('awb'))
         awbs = AWB.objects.filter(awb__in=awbs)
-    print awbs
-    table = AWBTable(awbs)
-    RequestConfig(request, paginate={"per_page": 10}).configure(table)
-    return render(request, 'common/search_awb_table.html', {'table': table})
+        table = AWBTable(awbs)
+        RequestConfig(request, paginate={"per_page": 10}).configure(table)
+        return render(request, 'common/search_awb_table.html', {'table': table})
+
+
+def search_awb_external(request, awbs):
+    awbs = re.split('[\s,;]+', request.GET.get('awbs'))
+    awbs = AWB.objects.filter(awb__in=awbs)
+    data = []
+    for awb in awbs:
+        data.append({'pk': awb.pk, 'awb': awb.awb, 'status': awb.awb_status.get_readable_choice(),
+                     'date': date_format(awb.awb_status.on_update, "SHORT_DATETIME_FORMAT").upper()})
+    return HttpResponse(json.dumps(data), 'application/json')
 
 
 def awb_status_update(request):

@@ -2,10 +2,6 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-#BASE_DIR = dirname(abspath(__file__))
-
-########## TEMPLATE CONFIGURATION
-# List of callables that know how to import templates from various sources.
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.contrib.auth.context_processors.auth',
@@ -22,28 +18,17 @@ TEMPLATE_DIRS = (
     os.path.normpath(os.path.join(BASE_DIR, 'templates')),
     os.path.normpath(os.path.join(BASE_DIR, 'templates/report_templates')),
 )
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '81psubnpj4e1u_dg&044x8tvi^dtou_)0zdw^o85546&ep1kpz'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-
-
 DEBUG = True
 
 ADMINS = (
     ('admin', 'abishek.verma@nuvoex.com'),
 )
-
 #TEMPLATE_DEBUG = True
-
 ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com', 'test.nuvoex.com']
 # Application definition
-
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -63,10 +48,8 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    # 'django.middleware.cache.UpdateCacheMiddleware', # This middleware must be first on the list
-    # 'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -76,13 +59,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'logistics.urls'
 
 WSGI_APPLICATION = 'logistics.wsgi.application'
-# Database
-# https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-#Host	ec2-54-235-156-5.compute-1.amazonaws.com
-#Database	d1ifebp6pvo8op
-#User	pesyjizvnefprz
-#Port	5432
-#Password	Hide SQlYP95wsm2_wBQ0nfo4wgQcPl
+
 import dj_database_url
 
 if not os.environ.has_key('DATABASE_URL'):
@@ -95,15 +72,6 @@ if not os.environ.has_key('DATABASE_URL'):
 DATABASES = {
     'default': dj_database_url.config(default=os.environ['DATABASE_URL'])
 }
-
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#        'NAME': 'nuvoex',
-#        'USER': 'nuvoex',
-#        'PASSWORD': '1',
-#    }
-#}
 # SESSION_ENGINE = 'redis_sessions.session'
 # SESSION_REDIS_UNIX_DOMAIN_SOCKET_PATH = '/var/run/redis/redis.sock'
 #
@@ -112,10 +80,9 @@ DATABASES = {
 #         'BACKEND': 'redis_cache.RedisCache',
 #         'LOCATION': '/var/run/redis/redis.sock',
 #     },
-# }
+#}
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'
@@ -124,10 +91,6 @@ USE_I18N = True
 
 USE_L10N = True
 
-# USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.6/howto/static-files/
 STATIC_ROOT = os.path.join(os.getcwd(), "staticfiles")
 
 STATIC_URL = '/static/'
@@ -135,13 +98,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.normpath(os.path.join(BASE_DIR, 'static')),
 )
-#STATIC_ROOT = 'staticfiles'
-#
-#STATIC_URL = '/static/'
-#
-#STATICFILES_DIRS = (
-#    join(BASE_DIR, 'static'),
-#)
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',

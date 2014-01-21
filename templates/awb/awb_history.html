@@ -64,10 +64,12 @@
                         </thead>
                         <tbody>
                         {% for k,v in awb_hist.items %}
-                            <tr>
-                                <td>{{ v.status }}</td>
-                                <th>{{ v.time }}</th>
-                            </tr>
+                            {% if v.status != '' %}
+                                <tr>
+                                    <td>{{ v.status }}</td>
+                                    <th>{{ v.time }}</th>
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                         </tbody>
                     </table>

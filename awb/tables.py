@@ -9,6 +9,7 @@ class AWBTable(tables.Table):
     category = tables.Column(accessor='category')
     address = tables.TemplateColumn(template_code='{{ record.address_1 }}, {{ record.address_2 }}, {{ record.city }}')
     status = tables.Column(accessor='awb_status.get_readable_choice')
+    drs = tables.Column(accessor='awb_status.current_drs', verbose_name='DRS')
     current_branch = tables.Column(accessor='awb_status.current_branch.branch_name')
     delivery_branch = tables.Column(accessor='get_delivery_branch.branch_name',
                                     verbose_name='Delivery Branch')
@@ -32,7 +33,7 @@ class AWBFLTable(tables.Table):
 
     class Meta:
         model = AWB
-        fields = ('awb', 'order_id', 'customer_name', 'address','pincode')
+        fields = ('awb', 'order_id', 'customer_name', 'address', 'pincode')
         attrs = {"class": "table table-striped table-bordered table-hover table-condensed"}
 
 
@@ -51,7 +52,7 @@ class AWBRLTable(tables.Table):
 
     class Meta:
         model = AWB
-        fields = ('awb', 'order_id', 'customer_name', 'address', 'pincode','barcode')
+        fields = ('awb', 'order_id', 'customer_name', 'address', 'pincode',)
         attrs = {"class": "table table-striped table-bordered table-hover table-condensed"}
 
 

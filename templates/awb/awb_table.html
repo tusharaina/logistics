@@ -6,12 +6,12 @@
         <thead>
         <tr>
             <th>S.No.</th>
-            <th class="center">
-                <label>
-                    <input type="checkbox" checked="true" class="select_all">
-                    <span class="lbl"></span>
-                </label>
-            </th>
+            {#            <th class="center">#}
+            {#                <label>#}
+            {#                    <input type="checkbox" checked="true" class="select_all">#}
+            {#                    <span class="lbl"></span>#}
+            {#                </label>#}
+            {#            </th>#}
             <th>AWB</th>
             <th>Order Id</th>
             <th>Client</th>
@@ -25,12 +25,12 @@
         {% for awb in awbs %}
             <tr id="{{ awb.pk }}">
                 <td>{{ forloop.counter }}
-                <td class="center">
-                    <label>
-                        <input type="checkbox" checked="true" id="{{ awb.pk }}">
-                        <span class="lbl"></span>
-                    </label>
-                </td>
+                    {#                <td class="center">#}
+                    {#                    <label>#}
+                    {#                        <input type="checkbox" checked="true" id="{{ awb.pk }}">#}
+                    {#                        <span class="lbl"></span>#}
+                    {#                    </label>#}
+                    {#                </td>#}
                 <td>{{ awb.awb }}</td>
                 <td>{{ awb.order_id }}</td>
                 <td>{{ awb.awb_status.manifest.client }}</td>
