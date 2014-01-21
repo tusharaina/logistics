@@ -110,6 +110,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 MANIFEST_URL = os.path.join(MEDIA_ROOT, 'uploads/manifest/')
+AWS_SECRET_ACCESS_KEY = 'x4k9p1AbVk+tXobUCBogVep7P4+qT2pDjrIwkB+3'
 
 AUTH_PROFILE_MODULE = "internal.Employee"
 
@@ -120,3 +121,15 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'abhishek.verma@nuvoex.com'
 EMAIL_HOST_PASSWORD = '08101en038'
 EMAIL_PORT = 587
+
+INSTALLED_APPS += ('storages',)
+
+if not DEBUG:
+    AWS_ACCESS_KEY_ID = 'AKIAII7EQ245A6NNADJQ'
+    AWS_SECRET_ACCESS_KEY = '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'
+    AWS_STORAGE_BUCKET_NAME = 'technomaniac'
+    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+    S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+    ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
+    STATIC_URL = S3_URL

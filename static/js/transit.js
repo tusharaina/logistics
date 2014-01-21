@@ -43,19 +43,7 @@ function closeLoader() {
     $('#ajaxLoader').hide();
 }
 
-//function getUrlVars() {
-//    var vars = {};
-//    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-//        vars[key] = value;
-//    });
-//    return vars;
-//}
 
-//$('li').live('hover', function () {
-//
-//    $(this).attr('class', 'open');
-//
-//});
 $(document).ready(function () {
     $('#start_date input').datepicker({
         dateFormat: 'yy-mm-dd'

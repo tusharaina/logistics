@@ -43,20 +43,19 @@ function closeLoader() {
     $('#ajaxLoader').hide();
 }
 
-//function getUrlVars() {
-//    var vars = {};
-//    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-//        vars[key] = value;
-//    });
-//    return vars;
-//}
+$('h4').on('click', function () {
+    if ($(this).nextAll('table:first').is(":visible")) {
+        $(this).nextAll('table:first').slideUp();
 
-//$('li').live('hover', function () {
-//
-//    $(this).attr('class', 'open');
-//
-//});
+    }
+    else {
+        $(this).nextAll('table:first').slideDown();
+    }
+});
+
 $(document).ready(function () {
+
+
     $('#start_date input').datepicker({
         dateFormat: 'yy-mm-dd'
     });
