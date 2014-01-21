@@ -776,12 +776,12 @@ function inScanDRSAWB(element) {
     }
 }
 
-$('#collected_amount').live('keypress', function (e) {
+$('#collected_amount').live('keydown', function (e) {
     var element = $(this);
     var exp_amt = element.closest('tr').find('#expected_amount').html().replace(/\.?[0]*$/, '');
     //alert(exp_amt);
     if (element.closest('tr').find('#type').html() == 'COD') {
-        if (e.which == 13) {
+        if (e.which == 13 || e.which == 9) {
             if (element.val() < exp_amt) {
                 alert('Please enter correct amount');
             } else {

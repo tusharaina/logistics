@@ -168,6 +168,7 @@ def awb_in_scanning(request):
                     if awb.get_delivery_branch().pk == int(request.session['branch']):
                         AWB_Status.objects.filter(awb=awb.pk).update(status='DCR',
                                                                      current_branch=request.session['branch'])
+                        AWB_History.objects.create(status='ISC', branch_id=int(request.session['branch']), awb=awb)
                         AWB_History.objects.create(status='DCR', branch_id=int(request.session['branch']), awb=awb)
                         awb.readable_status = AWB_Status.objects.get(awb=awb).get_readable_choice()
                     else:

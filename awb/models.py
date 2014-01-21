@@ -332,7 +332,10 @@ def get_awb_status(type, status, branch, awb, internal):
         if status == 'DR':
             return 'Data Received'
         elif status == 'ISC':
-            return 'In-Scanned at ' + branch_name + ' branch'
+            if internal:
+                return 'In-Scanned at ' + branch_name + ' branch'
+            else:
+                return 'Received at ' + branch_name + ' branch'
         elif status == 'DCR':
             if awb.category == 'REV':
                 return 'Pending for DTO at ' + branch_name + ' branch'
