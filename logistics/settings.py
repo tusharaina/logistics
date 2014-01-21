@@ -114,3 +114,9 @@ MANIFEST_URL = os.path.join(MEDIA_ROOT, 'uploads/manifest/')
 AUTH_PROFILE_MODULE = "internal.Employee"
 
 SESSION_SAVE_EVERY_REQUEST = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'abhishek.verma@nuvoex.com'
+EMAIL_HOST_PASSWORD = '08101en038'
+EMAIL_PORT = 587
