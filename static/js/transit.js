@@ -26,7 +26,6 @@ $.ajaxSetup({
     }
 });
 
-
 function ajaxloader(element) {
     $(element).html('<img src="/static/img/loader.gif" id="ajaxLoader">');
     var height = element.height();
@@ -132,7 +131,32 @@ $(document).ready(function () {
             })
         }).get();
     }
+    if ($('#drs_total_cash').length) {
+        get_drs_cash($('#drs_total_cash strong').attr('id'), 'total');
+    }
+    if ($('#drs_collected_cash').length) {
+        get_drs_cash($('#drs_collected_cash strong').attr('id'), 'collected');
+    }
 });
+
+function update_drs_cash() {
+    get_drs_cash($('#drs_total_cash strong').attr('id'), 'total');
+    get_drs_cash($('#drs_collected_cash strong').attr('id'), 'collected');
+}
+
+function get_drs_cash(drs, type) {
+    $.ajax({
+        type: 'GET',
+        url: '/transit/drs/get_cash',
+        data: {
+            'drs': drs,
+            'type': type
+        },
+        success: function (response) {
+            $("#drs_" + type + "_cash strong").html(response);
+        }
+    });
+}
 
 function get_drs_awbs(sort, element) {
     if ($(this).attr('id') == sort) {
@@ -580,6 +604,7 @@ $('#updateDRSStatus').live('change', function () {
             },
             success: function (response) {
                 $(element).closest('td').html(response);
+                update_drs_cash();
             }
         });
     }
@@ -656,6 +681,7 @@ $("#drs_status_update_form").submit(function () {
             success: function (response) {
                 //alert(response);
                 location.reload();
+                update_drs_cash();
             }
         });
     } else {
@@ -726,29 +752,37 @@ $('#dto_print_sheet').click(function () {
 //});
 
 function inScanDRSAWB(element) {
-    $.ajax({
-        type: 'POST',
-        url: '/transit/drs/awb_cancel_scan',
-        data: {
-            id: $(element).closest('tr').attr('id'),
-            awb: $(element).val()
-        },
-        success: function (response) {
-            if (response != '') {
-                $(element).closest('tr').find('select').val(response);
-                get_message();
-            } else {
-                get_message();
+    if (confirm('Are you sure want to update status ?')) {
+        $.ajax({
+            type: 'POST',
+            url: '/transit/drs/awb_cancel_scan',
+            data: {
+                id: $(element).closest('tr').attr('id'),
+                status: $(element).closest('tr').find('#status').val(),
+                awb: $(element).val()
+            },
+            success: function (response) {
+                if (response != '') {
+                    $(element).closest('tr').find('#status').attr('disabled', 'disabled');
+                    $(element).closest('tr').find('input[type="text"]').attr('disabled', 'disabled');
+                    update_drs_cash();
+                    get_message();
+                } else {
+                    update_drs_cash();
+                    get_message();
+                }
             }
-        }
-    });
+        });
+    }
 }
 
-$('#collected_amount').live('keypress', function (e) {
+$('#collected_amount').live('keydown', function (e) {
     var element = $(this);
+    var exp_amt = element.closest('tr').find('#expected_amount').html().replace(/\.?[0]*$/, '');
+    //alert(exp_amt);
     if (element.closest('tr').find('#type').html() == 'COD') {
-        if (e.which == 13) {
-            if (element.val() < element.closest('tr').find('#expected_amount').html()) {
+        if (e.which == 13 || e.which == 9) {
+            if (element.val() < exp_amt) {
                 alert('Please enter correct amount');
             } else {
                 if (confirm('Are you sure want to change status to delivered ?')) {
@@ -764,6 +798,8 @@ $('#collected_amount').live('keypress', function (e) {
                             if (response == 'True') {
                                 element.closest('tr').find('select').val('DEL');
                                 element.closest('tr').find('select').attr('disabled', 'disabled');
+                                element.closest('tr').find('input[type="text"]').attr('disabled', 'disabled');
+                                update_drs_cash();
                                 get_message();
                             }
                         }
@@ -773,7 +809,9 @@ $('#collected_amount').live('keypress', function (e) {
         }
     }
 });
+
 function update_awb_reason(element) {
+    var tr = $(element).closest('tr');
     var status = $(element).closest('tr').find('#status');
     if (status.val() == 'DBC') {
         updateDRSAWBStatus(status);
@@ -783,26 +821,31 @@ function update_awb_reason(element) {
 }
 
 function updateDRSAWBStatus(element) {
-    var awb = $(element).closest('tr').attr('id');
+    var tr = $(element).closest('tr');
+    var awb = tr.attr('id');
     var reason = $("#reason_" + awb).val();
-    if ($(element).closest('tr').find('#collected_amount').length) {
-        var coll_amt = $(element).closest('tr').find('#collected_amount').val()
+    var status = $(element).val();
+    if (tr.find('#collected_amount').length) {
+        var coll_amt = tr.find('#collected_amount').val();
     } else {
         coll_amt = ''
     }
-    if ($(element).val() == 'DEL' &&
-        $(element).closest('tr').find('#collected_amount').val() < $(element).closest('tr').find('#expected_amount').html() &&
-        $(element).closest('tr').find('#type').html() == 'COD') {
+
+    if (status == 'DEL' && tr.find('#type').html() == 'COD') {
         alert('Please enter collected amount');
-        $(element).closest('tr').find('#collected_amount').focus();
-    } else if ($(element).val() != 'DEL' &&
-        $(element).closest('tr').find('#in_scan').val() != $(element).closest('tr').find('#awb a').html()
-        && $(element).closest('tr').find('#type').html() != 'Reverse Pickup') {
-        alert('Please In-Scan Shipment first');
-        $(element).closest('tr').find('#in_scan').focus();
-    } else if ($(element).val() == 'DBC' && reason == '') {
-        alert('Please select Deferred Date');
-        $("#reason_" + awb).focus();
+        tr.find('#collected_amount').removeAttr('disabled').focus();
+    } else if (status == 'DBC' && reason == '') {
+        alert('Please select deferred date');
+        $("#reason_" + awb).removeAttr('disabled').focus();
+    } else if ((status == 'CAN' || status == 'CNA' || status == 'DBC') &&
+        tr.find('#in_scan').attr('disabled') == 'disabled' &&
+        (tr.find('#type').html() == 'COD' ||
+            tr.find('#type').html() == 'Prepaid')) {
+        alert('Please in-scan shipment');
+        tr.find('#in_scan').removeAttr('disabled').focus();
+    } else if (status == 'PC' && reason == '') {
+        alert('Please in-scan shipment');
+        tr.find('#in_scan').removeAttr('disabled').focus();
     }
     else {
         if (confirm('Are you sure want to change status ?')) {
@@ -811,13 +854,14 @@ function updateDRSAWBStatus(element) {
                 url: '/transit/drs/drs_awb_status_update',
                 data: {
                     awb: awb,
-                    status: $(element).val(),
+                    status: status,
                     coll_amt: coll_amt,
                     reason: reason
                 },
                 success: function (response) {
                     if (response == 'True') {
                         $(element).closest('tr').find('select').attr('disabled', 'disabled');
+                        update_drs_cash();
                         get_message();
                     }
                 }
@@ -827,13 +871,12 @@ function updateDRSAWBStatus(element) {
 }
 
 function generate_mis() {
-    var awbs = JSON.stringify(get_selected($('table tbody')));
-    if (awbs != '') {
-        window.open('/transit/awb/mis/download?awbs=' + awbs, 'MIS Download')
-    } else {
-        alert("Please select atleast one AWB")
-    }
-    return false;
+    //var awbs = JSON.stringify(get_selected($('table tbody')));
+    //if (awbs != '') {
+    window.open('/transit/awb/mis/download', 'MIS Download');
+//    } else {
+//        alert("Please select atleast one AWB")
+//    }
 }
 
 $('#awb_report_cc_form select').on('change', function () {
