@@ -113,13 +113,13 @@ AUTH_PROFILE_MODULE = "internal.Employee"
 
 SESSION_SAVE_EVERY_REQUEST = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'abhishek.verma@nuvoex.com'
-EMAIL_HOST_PASSWORD = '08101en038'
-EMAIL_PORT = 587
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST_USER = ''
+# EMAIL_HOST_PASSWORD = ''
+# EMAIL_PORT = 587
 
-INSTALLED_APPS += ('storages',)
+INSTALLED_APPS += ('storages', )
 
 if not DEBUG:
     DEFAULT_FILE_STORAGE = 'logistics.s3utils.MediaRootS3BotoStorage'
@@ -131,11 +131,8 @@ if not DEBUG:
     AWS_SECRET_ACCESS_KEY = 'x4k9p1AbVk+tXobUCBogVep7P4+qT2pDjrIwkB+3'
     AWS_STORAGE_BUCKET_NAME = 'technomaniac'
 
-    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-
     S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
     STATIC_URL = S3_URL + 'static/'
     MEDIA_URL = S3_URL + 'media/'
     ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
-    AWS_LOCATION = 'static'
+    #AWS_LOCATION = 'static'
