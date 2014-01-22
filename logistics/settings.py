@@ -121,10 +121,10 @@ SESSION_SAVE_EVERY_REQUEST = True
 
 INSTALLED_APPS += ('storages', )
 
-if not DEBUG:
-    DEFAULT_FILE_STORAGE = 'logistics.s3utils.MediaRootS3BotoStorage'
-    STATICFILES_STORAGE = 'logistics.s3utils.StaticRootS3BotoStorage'
+DEFAULT_FILE_STORAGE = 'logistics.s3utils.MediaRootS3BotoStorage'
+STATICFILES_STORAGE = 'logistics.s3utils.StaticRootS3BotoStorage'
 
+if not DEBUG:
     AWS_S3_SECURE_URLS = False       # use http instead of https
     AWS_QUERYSTRING_AUTH = False
     AWS_ACCESS_KEY_ID = 'AKIAII7EQ245A6NNADJQ'

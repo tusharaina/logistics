@@ -384,9 +384,9 @@ def drs_detail(request, drs_id):
 
 
 def dto_detail(request, dto_id):
-    rl = AWB.objects.filter(awb_status__current_dto=dto_id)
+    rl = AWB.objects.filter(awb_status__current_dto=dto_id).order_by('awb')
     return render(request, 'transit/awb_status_update.html',
-                  {'rl': rl, 'id': DTO.objects.get(pk=dto_id).dto_id, 'model': 'dto'}).order_by('awb')
+                  {'rl': rl, 'dto': DTO.objects.get(pk=int(dto_id)), 'model': 'dto'})
 
 
 def drs_in_scanning(request):
@@ -476,7 +476,7 @@ def dto_get_print_sheet(request):
         'awbs': awbs,
         'client': awbs[0].awb_status.manifest.client.client_name,
         #'branch': Branch.objects.get(pk=int(request.session['branch'])).branch_name,
-        'datetime': strftime("%Y-%m-%d %H:%M", gmtime())
+        'datetime': strftime("%Y-%m-%d", gmtime())
     }
     return render(request, 'transit/dto_print_sheet.html', context)
 
@@ -583,11 +583,12 @@ def drs_awb_cancel_scan(request):
             if awb.category == 'REV':
                 if awb.get_delivery_branch().pk == request.session['branch']:
                     AWB_Status.objects.filter(awb=awb.pk).update(status='DCR', current_branch=request.session['branch'],
-                                                                 updated_by=request.user)
-                    AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'])
+                                                                 reason=request.POST['reason'], updated_by=request.user)
+                    AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'],
+                                               reason=request.POST['reason'])
                 else:
                     AWB_Status.objects.filter(awb=awb.pk).update(status='PC', current_branch=request.session['branch'],
-                                                                 updated_by=request.user)
+                                                                 reason=request.POST['reason'], updated_by=request.user)
                     AWB_History.objects.create(awb=awb, status='PC', branch_id=request.session['branch'])
                 request.session['message']['class'] = 'success'
                 request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: Pick-up Completed" + \
@@ -598,7 +599,7 @@ def drs_awb_cancel_scan(request):
             else:
                 AWB_Status.objects.filter(awb=awb.pk).update(status=request.POST['status'],
                                                              current_branch=request.session['branch'],
-                                                             updated_by=request.user)
+                                                             updated_by=request.user, reason=request.POST['reason'])
                 AWB_History.objects.create(awb=awb, status=request.POST['status'], branch_id=request.session['branch'])
                 request.session['message']['class'] = 'success'
                 request.session['message']['report'] = "AWB: " + str(

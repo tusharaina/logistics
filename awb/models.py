@@ -226,6 +226,13 @@ class AWB(Time_Model):
         except Exception:
             return ''
 
+    def get_status_on_date(self, date):
+        date = date
+        try:
+            return self.awb_history_set.filter(creation_date__startswith=date).order_by('-creation_date')[0]. \
+                awb.awb_status.get_readable_choice()
+        except Exception:
+            return ''
 
     class Meta:
         verbose_name = 'AWB'
@@ -292,7 +299,10 @@ class AWB_Status(Time_Model):
         elif self.status == 'DEL' and self.manifest.category == 'RL':
             return "DTO'd to Client"
         else:
-            return dict(self.STATUS)[self.status]
+            try:
+                return dict(self.STATUS)[self.status]
+            except Exception:
+                return ''
 
     def get_current_branch(self):
         return self.current_tb.get_current_branch

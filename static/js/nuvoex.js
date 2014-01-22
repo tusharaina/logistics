@@ -751,27 +751,44 @@ $('#dto_print_sheet').click(function () {
 //});
 
 function inScanDRSAWB(element) {
-    if (confirm('Are you sure want to update status ?')) {
-        $.ajax({
-            type: 'POST',
-            url: '/transit/drs/awb_cancel_scan',
-            data: {
-                id: $(element).closest('tr').attr('id'),
-                status: $(element).closest('tr').find('#status').val(),
-                awb: $(element).val()
-            },
-            success: function (response) {
-                if (response != '') {
-                    $(element).closest('tr').find('#status').attr('disabled', 'disabled');
-                    $(element).closest('tr').find('input[type="text"]').attr('disabled', 'disabled');
-                    update_drs_cash();
-                    get_message();
-                } else {
-                    update_drs_cash();
-                    get_message();
-                }
+    var tr = $(element).closest('tr');
+    var id = tr.attr('id');
+    var status = tr.find('#status').val();
+    var reason = tr.find('#reason_' + id).val();
+    if ($(element).val() == tr.find('#awb a').html()) {
+        //alert(tr.find('#awb a').html());
+        if (status == 'DBC' && reason == '') {
+            alert('Please select deferred date');
+            tr.find('#reason_' + tr.attr('id')).removeAttr('disabled').focus();
+        } else {
+            if (confirm('Are you sure want to update status ?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/transit/drs/awb_cancel_scan',
+                    data: {
+                        id: id,
+                        status: status,
+                        reason: reason,
+                        awb: $(element).val()
+                    },
+                    success: function (response) {
+                        if (response != '') {
+                            tr.find('#status').attr('disabled', 'disabled');
+                            tr.find('input[type="text"]').attr('disabled', 'disabled');
+                            update_drs_cash();
+                            get_message();
+                        } else {
+                            update_drs_cash();
+                            get_message();
+                        }
+                    }
+                });
             }
-        });
+        }
+    } else {
+        alert('Please in-scan shipment');
+        $(element).removeAttr('disabled');
+        $(element).focus();
     }
 }
 
@@ -810,12 +827,13 @@ $('#collected_amount').live('keydown', function (e) {
 });
 
 function update_awb_reason(element) {
-    var tr = $(element).closest('tr');
+    var awb = $(element).closest('tr').attr('id');
     var status = $(element).closest('tr').find('#status');
-    if (status.val() == 'DBC') {
+    if (status.val() == 'DBC' && $(element).closest('tr').find('#in_scan').val() != $(element).closest('tr').find('#awb a').html()) {
         updateDRSAWBStatus(status);
     } else {
-        alert("Please change Status to 'Deferred by Customer'");
+        alert("Please in-scan shipment");
+        $(element).closest('tr').find('#in_scan').removeAttr('disabled').focus();
     }
 }
 
@@ -837,12 +855,12 @@ function updateDRSAWBStatus(element) {
         alert('Please select deferred date');
         $("#reason_" + awb).removeAttr('disabled').focus();
     } else if ((status == 'CAN' || status == 'CNA' || status == 'DBC') &&
-        tr.find('#in_scan').attr('disabled') == 'disabled' &&
+        tr.find('#in_scan').val() != tr.find('#awb a').html() &&
         (tr.find('#type').html() == 'COD' ||
             tr.find('#type').html() == 'Prepaid')) {
         alert('Please in-scan shipment');
         tr.find('#in_scan').removeAttr('disabled').focus();
-    } else if (status == 'PC' && reason == '') {
+    } else if (status == 'PC' && reason == '' && tr.find('#in_scan').val() != tr.find('#awb a').html()) {
         alert('Please in-scan shipment');
         tr.find('#in_scan').removeAttr('disabled').focus();
     }
