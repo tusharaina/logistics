@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-header position-relative">
+        <h1> DRS
+            <small><i class="icon-double-angle-right"></i> Search</small>
+        </h1>
+    </div>
+    <div class="row-fluid">
+        <div class="span12 table-responsive">
+            <div class="widget-main">
+                <form class="form-inline" role="form" method="post" id="drs_search_form">{% csrf_token %}
+                    {% if user.is_superuser or user.profile.branch.branch_name == 'HQ' or user.profile.branch.branch_name == '' %}
+                        <label class="center">Branch</label>
+                        <select name="branch" id="branch" onchange="drs_search()">
+                            <option selected style="display: none"></option>
+                            {% for branch in branchs %}
+                                <option value="{{ branch.pk }}">{{ branch.branch_name }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    <label class="center">Start Date</label>
+
+                    <div id="start_date" class="input-append">
+                        <input data-format="yyyy-MM-dd" type="text" name="start_date" class="input-small"
+                               onchange="drs_search()">
+                    </div>
+                    <label class="center">End Date</label>
+
+                    <div id="end_date" class="input-append">
+                        <input data-format="yyyy-MM-dd" type="text" name="end_date" class="input-small"
+                               onchange="drs_search()">
+                    </div>
+                    <label class="center">Status</label>
+                    <select name="status" id="status" onchange="drs_search()">
+                        <option value="C">Closed</option>
+                        <option value="O">Open</option>
+                    </select>
+                    <button class="btn btn-info btn-small" type="reset">
+                        <i class="icon-ok bigger-110"></i>
+                        Reset
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span12 table-responsive" id="drs_search_table"></div>
+    </div>
+{% endblock %}

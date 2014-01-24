@@ -227,10 +227,10 @@ class AWB(Time_Model):
             return ''
 
     def get_status_on_date(self, date):
-        date = date
         try:
-            return self.awb_history_set.filter(creation_date__startswith=date).order_by('-creation_date')[0]. \
-                awb.awb_status.get_readable_choice()
+            status = self.awb_history_set.filter(creation_date__lte=date + ' 23:59:59').order_by('-creation_date')[
+                0].status
+            return resolve_status(status, self.awb)
         except Exception:
             return ''
 
@@ -413,3 +413,25 @@ def get_branch_name(branch):
         return BRANCH_DICT[branch]
     else:
         return branch
+
+
+def resolve_status(status, awb):
+    STATUS = AWB_Status.STATUS
+    if status in ['TB', 'TBD', 'MTS', 'MTD']:
+        return 'In-Transit'
+    elif status == 'DCR':
+        if awb.awb_status.manifest.category == 'FL':
+            return 'Pending for Delivery'
+        else:
+            return 'Pending for DTO'
+    elif status == 'DRS':
+        return 'Dispatched'
+    elif status == 'DTO':
+        return 'Dispatched to Client'
+    elif status == 'DEL' and awb.awb_status.manifest.category == 'RL':
+        return "DTO'd to Client"
+    else:
+        try:
+            return dict(STATUS)[status]
+        except Exception:
+            return ''

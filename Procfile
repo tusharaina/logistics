@@ -1,1 +1,1 @@
-web: gunicorn_django -b 0.0.0.0:$PORT -w 3
+web: gunicorn_django -b 0.0.0.0:$PORT -w 3 --max-requests 1000 --timeout 1000 --preload

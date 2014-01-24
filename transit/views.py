@@ -23,9 +23,10 @@ from utils import generateId
 def tb_incoming(request):
     if 'branch' in request.session:
         table = TBTable(
-            TB.objects.filter(delivery_branch=request.session['branch']).exclude(tb_history__mts__status='D'))
+            TB.objects.filter(delivery_branch=request.session['branch']).exclude(tb_history__mts__status='D').order_by(
+                '-creation_date'))
     else:
-        table = TBTable(TB.objects.exclude(tb_history__mts__status='D'))
+        table = TBTable(TB.objects.exclude(tb_history__mts__status='D').order_by('-creation_date'))
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
     return render(request, 'common/table.html',
                   {'table': table, 'url': '/transit/tb/create', 'model': 'tb', 'type': 'incoming'})
@@ -34,9 +35,10 @@ def tb_incoming(request):
 def tb_outgoing(request):
     if 'branch' in request.session:
         table = TBTable(
-            TB.objects.filter(origin_branch=request.session['branch']).exclude(tb_history__mts__status='D'))
+            TB.objects.filter(origin_branch=request.session['branch']).exclude(tb_history__mts__status='D').order_by(
+                '-creation_date'))
     else:
-        table = TBTable(TB.objects.exclude(tb_history__mts__status='D'))
+        table = TBTable(TB.objects.exclude(tb_history__mts__status='D').order_by('-creation_date'))
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
     return render(request, 'common/table.html',
                   {'table': table, 'url': '/transit/tb/create', 'model': 'tb', 'type': 'outgoing'})
@@ -199,9 +201,10 @@ def ajax_create_tb(request):
 
 def mts_incoming(request):
     if 'branch' in request.session:
-        table = MTSTable(MTS.objects.filter(to_branch=request.session['branch']).exclude(status='D'))
+        table = MTSTable(
+            MTS.objects.filter(to_branch=request.session['branch']).exclude(status='D').order_by('-creation_date'))
     else:
-        table = MTSTable(MTS.objects.exclude(status='D'))
+        table = MTSTable(MTS.objects.exclude(status='D').order_by('-creation_date'))
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
     return render(request, 'common/table.html',
                   {'table': table, 'url': '/transit/mts/create', 'model': 'mts', 'type': 'incoming'})
@@ -209,9 +212,10 @@ def mts_incoming(request):
 
 def mts_outgoing(request):
     if 'branch' in request.session:
-        table = MTSOutgoingTable(MTS.objects.filter(from_branch=request.session['branch']).exclude(status='D'))
+        table = MTSOutgoingTable(
+            MTS.objects.filter(from_branch=request.session['branch']).exclude(status='D').order_by('-creation_date'))
     else:
-        table = MTSOutgoingTable(MTS.objects.exclude(status='D'))
+        table = MTSOutgoingTable(MTS.objects.exclude(status='D').order_by('-creation_date'))
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
     return render(request, 'common/table.html',
                   {'table': table, 'url': '/transit/mts/create', 'model': 'mts', 'type': 'outgoing'})
@@ -267,9 +271,10 @@ def ajax_create_mts(request):
 
 def drs(request):
     if 'branch' in request.session:
-        table = DRSTable(DRS.objects.filter(branch=request.session['branch']).exclude(status='C'))
+        table = DRSTable(
+            DRS.objects.filter(branch=request.session['branch']).exclude(status='C').order_by('-creation_date'))
     else:
-        table = DRSTable(DRS.objects.exclude(status='C'))
+        table = DRSTable(DRS.objects.exclude(status='C').order_by('-creation_date'))
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
     return render(request, 'common/table.html', {'table': table, 'url': 'drs/create', 'model': 'drs', 'type': 'open'})
 
@@ -375,9 +380,30 @@ def drs_update_status(request):
         return HttpResponse(drs[0].get_readable_choice())
 
 
+def drs_search(request):
+    context = {}
+    context['branchs'] = Branch.objects.exclude(pk=1)
+    if request.is_ajax():
+        filter = {}
+        if request.GET['branch'] != '':
+            filter['branch_id'] = request.GET['branch']
+        if request.GET['start_date'] != '' and request.GET['end_date'] != '':
+            filter['creation_date__range'] = (
+                request.GET['start_date'] + ' 00:00:00', request.GET['end_date'] + ' 23:59:59')
+        if request.GET['status'] != '':
+            filter['status'] = request.GET['status']
+        if 'branch' in request.session:
+            filter['branch'] = request.session['branch']
+        table = DRSTable(DRS.objects.filter(**filter).order_by('-creation_date'))
+        RequestConfig(request, paginate={"per_page": 100}).configure(table)
+        return render(request, 'common/ajax_table.html', {'table': table})
+    else:
+        return render(request, 'transit/drs_search.html', context)
+
+
 def drs_detail(request, drs_id):
-    fl = AWB.objects.filter(awb_status__current_drs=drs_id).exclude(category='REV').order_by('category')
-    rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category')
+    fl = AWB.objects.filter(awb_status__current_drs=drs_id).exclude(category='REV').order_by('category', 'awb')
+    rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category', 'awb')
 
     return render(request, 'transit/awb_status_update.html',
                   {'fl': fl, 'rl': rl, 'drs': DRS.objects.get(pk=drs_id), 'model': 'drs'})
@@ -431,14 +457,16 @@ def drs_in_scanning(request):
         form = CreateDRSForm()
         if 'branch' in request.session:
             form.fields['fe'].queryset = User.objects.filter(profile__branch_id=request.session['branch'],
-                                                             profile__role='FE')
-            form.fields['vehicle'].queryset = Vehicle.objects.filter(branch_id=request.session['branch'])
+                                                             profile__role='FE') | User.objects.filter(
+                profile__role='FE', profile__branch_id=None)
+            form.fields['vehicle'].queryset = Vehicle.objects.filter(
+                branch_id=request.session['branch']) | Vehicle.objects.filter(branch_id=None)
         return render(request, 'transit/drs_creation_form.html', {'form': form, 'model': 'drs'})
 
 
 def drs_get_print_sheet(request):
     data = list(set(json.loads(request.GET['awbs'])))
-    awbs = AWB.objects.filter(pk__in=data).order_by('category')
+    awbs = AWB.objects.filter(pk__in=data).order_by('category', 'awb')
     drs = awbs[0].awb_status.current_drs
     #print user.branch.branch_name
     context = {
@@ -483,9 +511,10 @@ def dto_get_print_sheet(request):
 
 def dto(request):
     if 'branch' in request.session:
-        table = DTOTable(DTO.objects.filter(branch=request.session['branch']).exclude(status='C'))
+        table = DTOTable(
+            DTO.objects.filter(branch=request.session['branch']).exclude(status='C').order_by('-creation_date'))
     else:
-        table = DTOTable(DTO.objects.exclude(status='C'))
+        table = DTOTable(DTO.objects.exclude(status='C').order_by('-creation_date'))
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
     return render(request, 'common/table.html', {'table': table, 'url': 'dto/create', 'model': 'dto', 'type': 'open'})
 
@@ -537,9 +566,11 @@ def dto_in_scanning(request):
     else:
         form = CreateDTOForm()
         if 'branch' in request.session:
-            form.fields['fe'].queryset = User.objects.filter(profile__branch_id=request.session['branch'],
-                                                             profile__role='FE')
-            form.fields['vehicle'].queryset = Vehicle.objects.filter(branch_id=request.session['branch'])
+            form.fields['fe'].queryset = User.objects.filter(
+                profile__branch_id=request.session['branch'],
+                profile__role='FE') | User.objects.filter(profile__role='FE', profile__branch_id=None)
+            form.fields['vehicle'].queryset = Vehicle.objects.filter(
+                branch_id=request.session['branch']) | Vehicle.objects.filter(branch=None)
         return render(request, 'transit/dto_creation_form.html', {'form': form, 'model': 'dto'})
 
 
@@ -584,8 +615,7 @@ def drs_awb_cancel_scan(request):
                 if awb.get_delivery_branch().pk == request.session['branch']:
                     AWB_Status.objects.filter(awb=awb.pk).update(status='DCR', current_branch=request.session['branch'],
                                                                  reason=request.POST['reason'], updated_by=request.user)
-                    AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'],
-                                               reason=request.POST['reason'])
+                    AWB_History.objects.create(awb=awb, status='DCR', branch_id=request.session['branch'])
                 else:
                     AWB_Status.objects.filter(awb=awb.pk).update(status='PC', current_branch=request.session['branch'],
                                                                  reason=request.POST['reason'], updated_by=request.user)
@@ -761,13 +791,11 @@ def get_count(request):
 
 
 def drs_update_closing_km(request):
-    if request.method == 'GET' and request.is_ajax():
-        request.session['message'] = {}
-        drs = DRS.objects.get(drs_id=request.GET['drs_id'])
-        drs.closing_km = request.GET['closing_km']
-        drs.save()
-        close_drs(drs.pk)
-        request.session['message']['class'] = 'success'
-        request.session['message']['report'] = 'DRS : ' + drs.drs_id + ' | Closing Km : ' + request.GET[
-            'closing_km'] + ' Km'
-    return HttpResponse(True)
+    request.session['message'] = {}
+    drs = DRS.objects.get(drs_id=request.GET['drs_id'])
+    drs.closing_km = request.GET['closing_km']
+    drs.save()
+    request.session['message']['class'] = 'success'
+    request.session['message']['report'] = 'DRS : ' + drs.drs_id + ' | Closing Km : ' + request.GET[
+        'closing_km'] + ' Km'
+    return HttpResponse(close_drs(drs.pk))

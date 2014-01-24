@@ -82,6 +82,7 @@ def awb_generate_mis(request):
         else:
             awbs = AWB.objects.filter(creation_date__range=(start_date, end_date))
         request.session['awb_mis'] = [awb.pk for awb in awbs]
+        request.session['start_date'] = request.POST['start_date']
         request.session['end_date'] = request.POST['end_date']
         return render(request, 'awb/awb_generate_mis.html', {'awbs': awbs, 'clients': Client.objects.all()})
     else:
@@ -90,21 +91,16 @@ def awb_generate_mis(request):
 
 def awb_download_mis(request):
     if request.method == 'GET' and 'awb_mis' in request.session and 'end_date' in request.session:
-        # awbs = json.loads(request.POST['awbs'])
-        # Create the HttpResponse object with the appropriate CSV header.
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="MIS_"' + str(strftime("%Y-%m-%d_%H-%M-%S",
                                                                                        gmtime())) + '".csv"'
 
         writer = csv.writer(response)
-        # field_names = [field.name for field in opts.fields]
-        # Write a first row with header information
-        #writer.writerow(field_names)
-        # Write data rows
         header = ['AWB', 'Client', 'Order ID', 'Priority', 'Consignee', 'Address', 'Phone', 'Pincode', 'Category',
                   'Amount', 'COD Amount', 'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count',
                   'First Pending', 'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status',
-                  'Last Status on ' + request.session['end_date'], 'First Scan Location', 'CS Call Made', 'Remark', 'Reason',
+                  'Last Status on ' + request.session['end_date'], 'First Scan Location', 'CS Call Made', 'Remark',
+                  'Reason',
                   'Date']
         writer.writerow(header)
         for id in request.session['awb_mis']:
@@ -116,12 +112,17 @@ def awb_download_mis(request):
                  awb.expected_amount, awb.weight, awb.get_delivery_branch(), awb.get_pickup_branch(),
                  awb.get_drs_count(), awb.get_first_pending(), awb.get_first_dispatch(), awb.get_last_dispatch(),
                  awb.get_last_scan(), awb.awb_status.get_readable_choice(),
-                 awb.get_status_on_date(request.session['end_date']), awb.get_first_scan_branch(),
-                 awb.get_last_call_made_time(), awb.awb_status.remark, awb.awb_status.reason,
-                 date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
+                 awb.get_status_on_date(request.session['end_date']),
+                 awb.get_first_scan_branch(), awb.get_last_call_made_time(), awb.awb_status.remark,
+                 awb.awb_status.reason, date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
+
         del request.session['awb_mis']
         del request.session['end_date']
         return response
+        # result = generate_mis.delay(request.session['awb_mis'], request.session['end_date'])
+        # del request.session['awb_mis']
+        # del request.session['end_date']
+        # return result.get()
     else:
         return HttpResponse('Server Error')
 
@@ -301,7 +302,8 @@ def search_awb_external(request, awbs):
     data = []
     for awb in awbs:
         data.append({'pk': awb.pk, 'awb': awb.awb, 'status': awb.awb_status.get_readable_choice(),
-                     'date': date_format(awb.awb_status.on_update, "SHORT_DATETIME_FORMAT").upper()})
+                     'date': date_format(awb.awb_history_set.all().order_by('-creation_date')[0].creation_date,
+                                         "SHORT_DATETIME_FORMAT").upper()})
     return HttpResponse(json.dumps(data), 'application/json')
 
 

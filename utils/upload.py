@@ -68,7 +68,7 @@ def upload_manifest_data(manifest_id, request):
                     bind = {}
                     if request.POST['category'] == 'RL':
                         bind['category'] = 'REV'
-                        bind['barcode'] = generate_barcode(awb)
+                        #bind['barcode'] = generate_barcode(awb)
                     else:
                         bind['category'] = ''
                     for key in header.keys():

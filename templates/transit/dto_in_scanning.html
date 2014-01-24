@@ -1,6 +1,7 @@
 {% if awb %}
     <tr id="{{ awb.pk }}">
         <input type="hidden" value="{{ awb.pk }}">
+        <td id="s_no"></td>
         <td>{{ awb.awb }}</td>
         <td>{{ awb.order_id }}</td>
         <td><input type="text" name="weight" class="input-medium"

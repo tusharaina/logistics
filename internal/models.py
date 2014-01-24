@@ -1,5 +1,8 @@
+import time
+
 from django.db import models
 from django.contrib.auth.models import User
+
 from common.models import Time_Model
 from awb.models import AWB
 
@@ -25,11 +28,22 @@ class Branch(Time_Model):
             awbs = AWB.objects.filter(pincode__in=pincodes)
         return awbs
 
-    def get_pincode_count(self):
-        return self.branch_pincodes.count()
+    def get_cash(self, type):
+        if type == 'expected':
+            exp_amt = self.drs_set.filter(creation_date__startswith=time.strftime("%Y-%m-%d")).aggregate(
+                expected_amount=models.Sum('awb_status__awb__expected_amount'))['expected_amount']
+        else:
+            exp_amt = self.drs_set.filter(creation_date__startswith=time.strftime("%Y-%m-%d"), status='C').aggregate(
+                collected_amt=models.Sum('awb_status__collected_amt'))['collected_amt']
+        return exp_amt if exp_amt is not None else 0
 
-    class Meta:
-        verbose_name = 'Branch'
+
+def get_pincode_count(self):
+    return self.branch_pincodes.count()
+
+
+class Meta:
+    verbose_name = 'Branch'
 
 
 class Branch_Pincode(Time_Model):

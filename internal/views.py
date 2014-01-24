@@ -1,13 +1,16 @@
+import re
+
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django_tables2 import RequestConfig
+from django.contrib.auth.decorators import login_required
+
 from internal.tables import BranchTable, EmployeeTable, VehicleTable, BranchPincodeTable
 from internal.models import Branch, Employee, Vehicle, Branch_Pincode
 from internal.forms import BranchForm, EmployeeForm, VehicleForm, BranchPincodeForm, BranchDropDownForm
 from common.forms import ExcelUploadForm
 from utils.upload import handle_uploaded_file, upload_branch_pincode_file, upload_vehicle_list_file
 from logistics.settings import MEDIA_ROOT
-from django.contrib.auth.decorators import login_required
 
 
 @login_required(login_url='/login')
@@ -113,3 +116,12 @@ def branch_get_all(request):
         else:
             form = BranchDropDownForm(initial={'branch': Branch.objects.get(branch_name='HQ').pk})
         return render(request, 'common/dropdown.html', {'form': form})
+
+
+def branch_get_cash(request):
+    if request.is_ajax():
+        if 'branch' in request.session:
+            cash = Branch.objects.get(pk=request.session['branch']).get_cash(request.GET['type'])
+        else:
+            cash = sum([branch.get_cash(request.GET['type']) for branch in Branch.objects.exclude(pk=1)])
+        return HttpResponse(re.sub('\.[0]*$', '', str(cash)))

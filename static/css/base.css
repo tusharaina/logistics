@@ -45,3 +45,7 @@ input[type="checkbox"] {
 #awb_report_cc_form #priority {
     width: 100px;
 }
+
+.collapse_table {
+    text-decoration: none;
+}

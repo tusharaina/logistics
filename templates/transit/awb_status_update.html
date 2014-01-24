@@ -104,7 +104,6 @@
             </div>
         </div>
     {% endif %}
-
     {% if rl.count > 0 %}
         <h4 class="blue">Reverse Logistics</h4>
         <div class="row-fluid">
@@ -214,10 +213,11 @@
         <div class="widget-main">
             <form class="form-inline" role="form" method="post" id="{{ model }}_closing_km_form">{% csrf_token %}
                 <label for="form-field-select-1">Closing Km.</label>
-                <input type="text" name="closing_km" id="closing_km">
+                <input type="text" name="closing_km" id="closing_km"
+                       {% if drs.closing_km != None %}value="{{ drs.closing_km }}"{% endif %}>
                 <button class="btn btn-info btn-small" type="button" onclick="save_drs_closing_km('{{ drs.drs_id }}')">
                     <i class="icon-ok bigger-110"></i>
-                    Save
+                    Close DRS
                 </button>
                 {#                <button class="btn btn-info btn-small" type="button" id="drs_print_sheet">#}
                 {#                    <i class="icon-ok bigger-110"></i>#}

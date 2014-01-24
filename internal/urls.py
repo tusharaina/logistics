@@ -3,6 +3,7 @@ from django.conf.urls import patterns, url
 urlpatterns = patterns('internal.views',
                        #url(r'home$',TemplateView.as_view(template_name='client/pincode.html'), name="home"),
                        url(r'^branch$', 'branch', name='show_branch'),
+                       url(r'^branch/cash$', 'branch_get_cash', name='branch_get_cash'),
                        url(r'^branch/add$', 'add_branch', name='add_branch'),
                        url(r'^branch_pincode/add$', 'add_branch_pincode', name='add_branch_pincode'),
                        url(r'^employee$', 'employee', name='show_employee'),
