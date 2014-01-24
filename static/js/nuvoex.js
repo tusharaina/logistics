@@ -107,6 +107,21 @@ $(document).ready(function () {
             }
         });
     }
+    if ($("#rto_awb_table").length) {
+        $.ajax({
+            type: 'POST',
+            url: '/transit/rto/get_awbs',
+            //cache: true,
+//            beforeSend: function () {
+//                ajaxloader($('#rto_awb_table'));
+//            },
+            success: function (response) {
+                $("#rto_awb_table").html(response);
+                //closeLoader();
+            }
+        });
+    }
+
     call_count_functions();
 
     $("#warehouse_pincode").autocomplete({

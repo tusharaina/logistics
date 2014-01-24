@@ -1,0 +1,73 @@
+{% if rl.count > 0 %}
+    <h4 class="blue">AWBs Pending for RTO (Forward Logistics)<strong>
+        <small class="red"><i class="icon-double-angle-right"></i> Please In-Scan Shipments</small>
+    </strong></h4>
+    <table class="table table-bordered table-condensed table-stripped" id="reverse_awb_table">
+        <thead>
+        <tr>
+            <th>S.No.</th>
+            <th>AWB</th>
+            <th>Order Id</th>
+            <th>Client</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Delivery Branch</th>
+            <th>RTO Branch</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for awb in rl %}
+            <tr id="{{ awb.pk }}">
+                <td>{{ forloop.counter }}
+                <td>{{ awb.awb }}</td>
+                <td>{{ awb.order_id }}</td>
+                <td>{{ awb.awb_status.manifest.client }}</td>
+                <td>{{ awb.get_readable_choice }}</td>
+                <td>{{ awb.awb_status.get_readable_choice }}</td>
+                <td>{{ awb.get_delivery_branch }}</td>
+                <td>{{ awb.get_rto_branch }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <h4 class="blue">No AWB Pending for RTO (Reverse Logistics)</h4>
+{% endif %}
+
+{##}
+{##}
+{#{% if fl.count > 0 %}#}
+{#    <h4 class="blue">AWBs Pending for Return (Forward Logistics)<strong>#}
+{#        <small class="red"><i class="icon-double-angle-right"></i> Please In-Scan Shipments</small>#}
+{#    </strong></h4>#}
+{#    <table class="table table-bordered table-condensed table-stripped">#}
+{#        <thead>#}
+{#        <tr>#}
+{#            <th>S.No.</th>#}
+{#            <th>AWB</th>#}
+{#            <th>Order Id</th>#}
+{#            <th>Client</th>#}
+{#            <th>Category</th>#}
+{#            <th>Status</th>#}
+{#            <th>Current Branch</th>#}
+{#            <th>Delivery Branch</th>#}
+{#        </tr>#}
+{#        </thead>#}
+{#        <tbody>#}
+{#        {% for awb in fl %}#}
+{#            <tr id="{{ awb.pk }}">#}
+{#                <td>{{ forloop.counter }}#}
+{#                <td>{{ awb.awb }}</td>#}
+{#                <td>{{ awb.order_id }}</td>#}
+{#                <td>{{ awb.awb_status.manifest.client }}</td>#}
+{#                <td>{{ awb.get_readable_choice }}</td>#}
+{#                <td>{{ awb.awb_status.get_readable_choice }}</td>{% if rl %}#}
+{#                <td>{{ awb.awb_status.current_branch }}</td>#}
+{#                <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>#}
+{#            </tr>#}
+{#        {% endfor %}#}
+{#        </tbody>#}
+{#    </table>#}
+{#{% else %}#}
+{#    <h4 class="blue">No AWB Pending for Return (Forward Logistics)</h4>#}
+{#{% endif %}#}

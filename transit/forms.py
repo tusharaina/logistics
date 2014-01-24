@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django import forms
-from transit.models import TB, MTS, DRS, DTO
+from transit.models import TB, MTS, DRS, DTO, RTO
 from internal.models import Vehicle
 #from awb.models import AWB
 
@@ -32,3 +32,11 @@ class CreateDTOForm(forms.ModelForm):
     class Meta:
         model = DTO
         exclude = ['is_active', 'status', 'dto_id', 'branch']
+
+class CreateRTOForm(forms.ModelForm):
+    fe = forms.ModelChoiceField(queryset=User.objects.filter(profile__role='FE'), required=True)
+    vehicle = forms.ModelChoiceField(queryset=Vehicle.objects.all())
+
+    class Meta:
+        model=RTO
+        exclude = ['is_active','status','rto_id','branch']

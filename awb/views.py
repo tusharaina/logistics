@@ -58,9 +58,11 @@ def awb_outgoing(request):
 
 
 def awb_history(request, awb_id):
-    awb = AWB.objects.get(pk=int(awb_id))
-    return render(request, 'awb/awb_history.html',
-                  {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
+    # awb = AWB.objects.get(pk=int(awb_id))
+     data=serializers.serialize('json',AWB.objects.filter(id=int(awb_id)))
+     return HttpResponse(data,mimetype='application/json')
+    # return render(request, 'awb/awb_history.html',
+    #              {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
 
 
 def awb_history_external(request, awb_id):

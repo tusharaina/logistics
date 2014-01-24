@@ -89,6 +89,10 @@ class AWB(Time_Model):
         else:
             return self.pincode.branch_pincode.branch
 
+
+    def get_rto_branch(self):
+        return self.awb_status.manifest.branch
+
     def get_pickup_branch(self):
         if self.category == 'REV':
             return self.pincode.branch_pincode.branch

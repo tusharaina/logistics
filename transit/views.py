@@ -9,10 +9,11 @@ from django.shortcuts import render, HttpResponse
 from django.contrib.auth.models import User
 from django_tables2 import RequestConfig
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 
 from internal.models import Branch, Vehicle
 from .models import TB, TB_History, MTS, DRS, DTO, close_drs
-from .forms import CreateMTSForm, CreateTBForm, CreateDRSForm, CreateDTOForm
+from .forms import CreateMTSForm, CreateTBForm, CreateDRSForm, CreateDTOForm, CreateRTOForm
 from awb.models import AWB, AWB_History, AWB_Status
 from .tables import TBTable, DRSTable, MTSTable, DTOTable, MTSOutgoingTable
 from awb.tables import AWBTable
@@ -304,6 +305,19 @@ def ajax_get_dto_awbs(request):
             # fl = AWB.objects.filter(awb_status__status='CAN').exclude(category='REV')
         return render(request, 'transit/dto_awb_table.html', {'rl': rl})
 
+def ajax_get_rto_awbs(request):
+    if request.method == "POST" and request.is_ajax():
+        if 'branch' in request.session:
+            rl = AWB.objects.filter(awb_status__status__in=['CAN', 'RET'],
+                                    awb_status__manifest__branch_id=request.session['branch']).exclude(category='REV')
+            # fl = AWB.objects.filter(awb_status__status='CAN',s
+            #                         pincode__branch_pincode__branch_id=request.session['branch']).exclude(
+            #     category='REV')
+        else:
+            rl = AWB.objects.filter(awb_status__status__in=['CAN', 'RET']).exclude(category='REV')
+            # fl = AWB.objects.filter(awb_status__status='CAN').exclude(category='REV')
+        return render(request, 'transit/rto_awb_table.html', {'rl': rl})
+
 
 def ajax_create_drs(request):
     if request.method == "POST" and request.is_ajax():
@@ -376,11 +390,13 @@ def drs_update_status(request):
 
 
 def drs_detail(request, drs_id):
-    fl = AWB.objects.filter(awb_status__current_drs=drs_id).exclude(category='REV').order_by('category')
-    rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category')
+    data=serializers.serialize('json',DRS.objects.all())#(id=int(drs_id)))
+    return HttpResponse(data,mimetype='application/json')
 
-    return render(request, 'transit/awb_status_update.html',
-                  {'fl': fl, 'rl': rl, 'drs': DRS.objects.get(pk=drs_id), 'model': 'drs'})
+    # fl = AWB.objects.filter(awb_status__current_drs=drs_id).exclude(category='REV').order_by('category')
+    # rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category')
+    # return render(request, 'transit/awb_status_update.html',
+    #               {'fl': fl, 'rl': rl, 'drs': DRS.objects.get(pk=drs_id), 'model': 'drs'})
 
 
 def dto_detail(request, dto_id):
@@ -541,6 +557,58 @@ def dto_in_scanning(request):
                                                              profile__role='FE')
             form.fields['vehicle'].queryset = Vehicle.objects.filter(branch_id=request.session['branch'])
         return render(request, 'transit/dto_creation_form.html', {'form': form, 'model': 'dto'})
+
+def rto_in_scanning(request):
+    if request.method == 'POST' and request.is_ajax():
+        request.session['message'] = {}
+        try:
+            awb = AWB.objects.get(awb=request.POST['awb'])
+            if awb.awb_status.manifest.category == 'RL':
+                if awb.get_delivery_branch().pk == request.session['branch']:
+                    if awb.awb_status.status in ['DCR', 'CAN', 'RBC', 'CB']:
+                        request.session['message']['class'] = 'success'
+                        request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
+                            awb.awb_status.get_readable_choice())
+                        return render(request, 'transit/dto_in_scanning.html', {'awb': awb})
+                    else:
+                        request.session['message']['class'] = 'error'
+                        request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
+                            awb.awb_status.get_readable_choice())
+                        return HttpResponse('')
+                else:
+                    request.session['message']['class'] = 'error'
+                    request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
+                        awb.awb_status.get_readable_choice()) + " | Delivery Branch: " + str(
+                        awb.get_delivery_branch().branch_name)
+                    return HttpResponse('')
+            else:
+                if awb.get_delivery_branch().pk == request.session['branch']:
+                    if awb.awb_status.status in ['CAN', 'ITR']:
+                        request.session['message']['class'] = 'error'
+                        request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
+                            awb.awb_status.get_readable_choice())
+                        return HttpResponse('')
+                    else:
+                        request.session['message']['class'] = 'error'
+                        request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
+                            awb.awb_status.get_readable_choice())
+                        return HttpResponse('')
+                else:
+                    request.session['message']['class'] = 'error'
+                    request.session['message']['report'] = "AWB: " + str(awb.awb) + " | Status: " + str(
+                        awb.awb_status.get_readable_choice())
+                    return HttpResponse('')
+        except AWB.DoesNotExist:
+            request.session['message']['class'] = 'error'
+            request.session['message']['report'] = "AWB: " + request.POST['awb'] + " | Status: Does Not Exists"
+            return HttpResponse('')
+    else:
+        form = CreateRTOForm()
+        if 'branch' in request.session:
+            form.fields['fe'].queryset = User.objects.filter(profile__branch_id=request.session['branch'],
+                                                             profile__role='FE')
+            form.fields['vehicle'].queryset = Vehicle.objects.filter(branch_id=request.session['branch'])
+        return render(request, 'transit/rto_creation_form.html', {'form': form, 'model': 'rto'})
 
 
 def ajax_create_dto(request):
