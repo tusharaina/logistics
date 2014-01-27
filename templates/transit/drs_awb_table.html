@@ -1,91 +1,113 @@
 {% if fl.count > 0 %}
-    <h4 class="blue" xmlns="http://www.w3.org/1999/html">AWBs Pending for Delivery (Forward Logistics)<strong>
-        <small class="red"><i class="icon-double-angle-right"></i> Please In-Scan Shipments</small>
-    </strong></h4>
-    <table class="table table-bordered table-condensed table-stripped">
-        <thead>
-        <tr>
-            <th>S.No.</th>
-            <th><a href="javascript:void(0)" id="awb" onclick="get_drs_awbs('awb',this)">AWB</a></th>
-            <th><a href="javascript:void(0)" id="order_id" onclick="get_drs_awbs('order_id',this)">Order Id</a></th>
-            <th><a href="javascript:void(0)" id="category" onclick="get_drs_awbs('category',this)">Category</a></th>
-            <th><a href="javascript:void(0)" id="awb_status__status" onclick="get_drs_awbs('awb_status__status',this)">Status</a>
-            </th>
-            <th><a href="javascript:void(0)" id="address_1" onclick="get_drs_awbs('address_1',this)">Address</a></th>
-            <th><a href="javascript:void(0)" id="pincode__pincode" onclick="get_drs_awbs('pincode__pincode',this)">Pincode</a>
-            </th>
-            <th><a href="javascript:void(0)" id="pincode__branch_pincode__branch"
-                   onclick="get_drs_awbs('pincode__branch_pincode__branch',this)">Delivery
-                Branch</a></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for awb in fl %}
-            <tr id="{{ awb.pk }}">
-                <td>{{ forloop.counter }}
-                <td><a href="/transit/awb/{{ awb.pk }}" target="_blank">{{ awb.awb }}</a></td>
-                <td>{{ awb.order_id }}</td>
-                <td>{{ awb.get_readable_choice }}</td>
-                <td>{{ awb.awb_status.get_readable_choice }}</td>
-                <td>{{ awb.address_1 }}, {{ awb.address_2 }}</td>
-                <td>{{ awb.pincode.pincode }}</td>
-                <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <a href="javascript:void(0)" class="collapse_table">
+        <h4 class="blue">AWBs Pending for Delivery (Forward Logistics)<strong>
+            <small class="red"><i class="icon-double-angle-right"></i> Please In-Scan Shipments</small>
+        </strong></h4>
+    </a>
+    <div class="row-fluid">
+        <div class="span12 table-responsive">
+            <table class="table table-bordered table-condensed table-stripped">
+                <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th><a href="javascript:void(0)" id="awb" onclick="get_drs_awbs('awb',this)">AWB</a></th>
+                    <th><a href="javascript:void(0)" id="order_id" onclick="get_drs_awbs('order_id',this)">Order Id</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="category" onclick="get_drs_awbs('category',this)">Category</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="awb_status__status"
+                           onclick="get_drs_awbs('awb_status__status',this)">Status</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="address_1" onclick="get_drs_awbs('address_1',this)">Address</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="pincode__pincode"
+                           onclick="get_drs_awbs('pincode__pincode',this)">Pincode</a>
+                    </th>
+                    <th>
+                        <a href="javascript:void(0)" id="pincode__branch_pincode__branch"
+                           onclick="get_drs_awbs('pincode__branch_pincode__branch',this)">Delivery Branch
+                        </a>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for awb in fl %}
+                    <tr id="{{ awb.pk }}">
+                        <td>{{ forloop.counter }}
+                        <td><a href="/transit/awb/{{ awb.pk }}" target="_blank">{{ awb.awb }}</a></td>
+                        <td>{{ awb.order_id }}</td>
+                        <td>{{ awb.get_readable_choice }}</td>
+                        <td>{{ awb.awb_status.get_readable_choice }}</td>
+                        <td>{{ awb.address_1 }}, {{ awb.address_2 }}</td>
+                        <td>{{ awb.pincode.pincode }}</td>
+                        <td>{{ awb.pincode.branch_pincode.branch.branch_name }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% else %}
     <h4 class="blue">No AWB Pending for Delivery (Forward Logistics)</h4>
 {% endif %}
-<br/>
 {% if rl.count > 0 %}
-    <h4 class="blue">AWBs Pending for Pickup (Reverse Logistics)<strong>
-        <small class="red"><i class="icon-double-angle-right"></i> Please Select Shipments</small>
-    </strong></h4>
-    <table class="table table-bordered table-condensed table-stripped" id="reverse_awb_table">
-        <thead>
-        <tr>
-            <th>S.No.</th>
-            <th class="center">
-                <label>
-                    <input type="checkbox" class="select_all">
-                    <span class="lbl"></span>
-                </label>
-            </th>
-            <th><a href="javascript:void(0)" id="awb" onclick="get_drs_awbs('awb',this)">AWB</a></th>
-            <th><a href="javascript:void(0)" id="order_id" onclick="get_drs_awbs('order_id',this)">Order Id</a></th>
-            <th><a href="javascript:void(0)" id="awb_status__status" onclick="get_drs_awbs('awb_status__status',this)">Status</a>
-            </th>
-            <th><a href="javascript:void(0)" id="address_1" onclick="get_drs_awbs('address_1',this)">Address</a></th>
-            <th><a href="javascript:void(0)" id="pincode__pincode" onclick="get_drs_awbs('pincode__pincode',this)">Pincode</a>
-            </th>
-            {#            <th>Pickup Branch</th>#}
-            <th><a href="javascript:void(0)" id="awb_status__manifest__branch__branch_name"
-                   onclick="get_drs_awbs('awb_status__manifest__branch__branch_name',this)">DTO
-                Branch</a></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for awb in rl %}
-            <tr id="{{ awb.pk }}">
-                <td>{{ forloop.counter }}
-                <td class="center">
-                    <label>
-                        <input type="checkbox" id="{{ awb.pk }}">
-                        <span class="lbl"></span>
-                    </label>
-                </td>
-                <td><a href="/transit/awb/{{ awb.pk }}" target="_blank">{{ awb.awb }}</a></td>
-                <td>{{ awb.order_id }}</td>
-                <td>{{ awb.awb_status.get_readable_choice }}</td>
-                <td>{{ awb.address_1 }}, {{ awb.address_2 }}</td>
-                <td>{{ awb.pincode.pincode }}</td>
-                {#                <td>{{ awb.get_pickup_branch.branch_name }}</td>#}
-                <td>{{ awb.get_delivery_branch.branch_name }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <a href="javascript:void(0)" class="collapse_table">
+        <h4 class="blue">AWBs Pending for Pickup (Reverse Logistics)<strong>
+            <small class="red"><i class="icon-double-angle-right"></i> Please Select Shipments</small>
+        </strong></h4>
+    </a>
+    <div class="row-fluid">
+        <div class="span12 table-responsive">
+            <table class="table table-bordered table-condensed table-stripped" id="reverse_awb_table">
+                <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th class="center">
+                        <label>
+                            <input type="checkbox" class="select_all">
+                            <span class="lbl"></span>
+                        </label>
+                    </th>
+                    <th><a href="javascript:void(0)" id="awb" onclick="get_drs_awbs('awb',this)">AWB</a></th>
+                    <th><a href="javascript:void(0)" id="order_id" onclick="get_drs_awbs('order_id',this)">Order Id</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="awb_status__status"
+                           onclick="get_drs_awbs('awb_status__status',this)">Status</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="address_1" onclick="get_drs_awbs('address_1',this)">Address</a>
+                    </th>
+                    <th><a href="javascript:void(0)" id="pincode__pincode"
+                           onclick="get_drs_awbs('pincode__pincode',this)">Pincode</a>
+                    </th>
+                    {#            <th>Pickup Branch</th>#}
+                    <th><a href="javascript:void(0)" id="awb_status__manifest__branch__branch_name"
+                           onclick="get_drs_awbs('awb_status__manifest__branch__branch_name',this)">DTO
+                        Branch</a></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for awb in rl %}
+                    <tr id="{{ awb.pk }}">
+                        <td>{{ forloop.counter }}
+                        <td class="center">
+                            <label>
+                                <input type="checkbox" id="{{ awb.pk }}">
+                                <span class="lbl"></span>
+                            </label>
+                        </td>
+                        <td><a href="/transit/awb/{{ awb.pk }}" target="_blank">{{ awb.awb }}</a></td>
+                        <td>{{ awb.order_id }}</td>
+                        <td>{{ awb.awb_status.get_readable_choice }}</td>
+                        <td>{{ awb.address_1 }}, {{ awb.address_2 }}</td>
+                        <td>{{ awb.pincode.pincode }}</td>
+                        {#                <td>{{ awb.get_pickup_branch.branch_name }}</td>#}
+                        <td>{{ awb.get_delivery_branch.branch_name }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% else %}
     <h4 class="blue">No AWB Pending for Pickup</h4>
 {% endif %}

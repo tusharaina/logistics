@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'userlogin',
     'django_tables2',
     'south',
+    'djcelery',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -114,8 +115,41 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 MEDIA_URL = '/media/'
 
-MANIFEST_URL = os.path.join(MEDIA_ROOT, 'uploads/manifest/')
-
 AUTH_PROFILE_MODULE = "internal.Employee"
 
 SESSION_SAVE_EVERY_REQUEST = True
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST_USER = ''
+# EMAIL_HOST_PASSWORD = ''
+# EMAIL_PORT = 587
+
+INSTALLED_APPS += ('storages', )
+
+# if not DEBUG:
+#     DEFAULT_FILE_STORAGE = 'logistics.s3utils.MediaRootS3BotoStorage'
+#     STATICFILES_STORAGE = 'logistics.s3utils.StaticRootS3BotoStorage'
+#     AWS_S3_SECURE_URLS = False       # use http instead of https
+#     AWS_QUERYSTRING_AUTH = False
+#     AWS_ACCESS_KEY_ID = 'AKIAII7EQ245A6NNADJQ'
+#     AWS_SECRET_ACCESS_KEY = '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'
+#     AWS_STORAGE_BUCKET_NAME = 'technomaniac'
+#
+#     S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+#     STATIC_URL = S3_URL + 'static/'
+#     MEDIA_URL = S3_URL + 'media/'
+#     ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
+#     AWS_LOCATION = 'static'
+#
+# BROKER_URL = "redis://localhost:6379/0"
+# CELERY_RESULT_BACKEND = "redis"
+# CELERY_REDIS_HOST = "localhost"
+# CELERY_REDIS_PORT = 6379
+# CELERY_REDIS_DB = 0
+# CELERY_SEND_TASK_ERROR_EMAILS = True
+# CELERYD_LOG_FILE = '/tmp/celery.log'
+#
+# import djcelery
+#
+# djcelery.setup_loader()

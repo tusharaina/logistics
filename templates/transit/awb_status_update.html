@@ -4,7 +4,12 @@
         <button class="btn btn-info btn-small pull-right" type="button" id="{{ model }}_print_sheet">
             Print Sheet
         </button>
-        <h1> {{ drs.drs_id }}
+        <h1>
+            {% if model == 'drs' %}
+                {{ drs.drs_id }}
+            {% else %}
+                {{ dto.dto_id }}
+            {% endif %}
             <small><i class="icon-double-angle-right"></i> Shipment Status Update</small>
         </h1>
     </div>
@@ -99,7 +104,6 @@
             </div>
         </div>
     {% endif %}
-
     {% if rl.count > 0 %}
         <h4 class="blue">Reverse Logistics</h4>
         <div class="row-fluid">
@@ -144,25 +148,29 @@
                             {#                            <td>{{ awb.awb_status.manifest.client }}</td>#}
                             <td id="type">{{ awb.get_readable_choice }}</td>
                             <td>{{ awb.get_delivery_branch.branch_name }}</td>
-                            <td>
-                                {% if awb.awb_status.status == 'PP' %}
-                                    <select onchange="updateDRSAWBStatus(this)" id="status">
-                                        <option value="{{ awb.awb_status.status }}"
-                                                selected
-                                                style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
-                                        <option value="PC">Pick-up Completed</option>
-                                        <option value="CAN">Cancelled</option>
-                                        <option value="DBC">Deferred by Customer</option>
-                                        <option value="CNA">Customer not Available</option>
-                                        <option value="PC" style="display: none">Pick-up Completed</option>
-                                    </select>
-                                {% else %}
-                                    <select disabled>
-                                        <option value="{{ awb.awb_status.status }}"
-                                                selected>{{ awb.awb_status.get_readable_choice }}</option>
-                                    </select>
-                                {% endif %}
-                            </td>
+                            {% if model == 'drs' %}
+                                <td>
+
+                                    {% if awb.awb_status.status == 'PP' %}
+                                        <select onchange="updateDRSAWBStatus(this)" id="status">
+                                            <option value="{{ awb.awb_status.status }}"
+                                                    selected
+                                                    style="display: none">{{ awb.awb_status.get_readable_choice }}</option>
+                                            <option value="PC">Pick-up Completed</option>
+                                            <option value="CAN">Cancelled</option>
+                                            <option value="DBC">Deferred by Customer</option>
+                                            <option value="CNA">Customer not Available</option>
+                                            <option value="PC" style="display: none">Pick-up Completed</option>
+                                        </select>
+                                    {% else %}
+                                        <select disabled>
+                                            <option value="{{ awb.awb_status.status }}"
+                                                    selected>{{ awb.awb_status.get_readable_choice }}</option>
+                                        </select>
+
+                                    {% endif %}
+                                </td>
+                            {% endif %}
 
                             {% if model == 'drs' %}
                                 <td><input type="text" class="input-medium" id="reason_{{ awb.pk }}" name="reason"
@@ -205,10 +213,11 @@
         <div class="widget-main">
             <form class="form-inline" role="form" method="post" id="{{ model }}_closing_km_form">{% csrf_token %}
                 <label for="form-field-select-1">Closing Km.</label>
-                <input type="text" name="closing_km" id="closing_km">
+                <input type="text" name="closing_km" id="closing_km"
+                       {% if drs.closing_km != None %}value="{{ drs.closing_km }}"{% endif %}>
                 <button class="btn btn-info btn-small" type="button" onclick="save_drs_closing_km('{{ drs.drs_id }}')">
                     <i class="icon-ok bigger-110"></i>
-                    Save
+                    Close DRS
                 </button>
                 {#                <button class="btn btn-info btn-small" type="button" id="drs_print_sheet">#}
                 {#                    <i class="icon-ok bigger-110"></i>#}

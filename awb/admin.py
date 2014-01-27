@@ -10,7 +10,7 @@ class AWBAdmin(admin.ModelAdmin):
 
 class AWB_StatusAdmin(admin.ModelAdmin):
     list_display = (
-        'awb', 'status', 'current_branch')
+        'awb', 'status', 'current_branch', 'current_drs')
     search_fields = ['awb__awb', 'current_branch__branch_name', 'current_tb__tb_id', 'current_drs__drs_id',
                      'current_mts__mts_id']
     list_filter = ['current_branch__branch_name', 'current_tb__tb_id', 'current_drs__drs_id',

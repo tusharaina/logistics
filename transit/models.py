@@ -95,7 +95,16 @@ class DRS(Time_Model):
         return self.awb_history_set.all().count()
 
     def get_awb_close_count(self):
-        return self.awb_status_set.filter(status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET', 'SCH']).count()
+        fl = self.awb_status_set.filter(
+            status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET', 'SCH', 'DTO']).exclude(
+            awb__category='REV').count()
+        rl = self.awb_status_set.filter(
+            status__in=['DEL', 'CAN', 'DCR', 'PC', 'CNA', 'DBC', 'RET', 'SCH', 'DTO', 'TB', 'TBD', 'MTS', 'MTD'],
+            awb__category='REV').count()
+        return fl + rl
+
+    def get_open_awb_count(self):
+        return self.awb_status_set.filter(status__in=['DRS', 'PP']).count()
 
     def get_expected_amount(self):
         exp_amt = self.awb_status_set.filter(manifest__category='FL').exclude(status__in=['CAN', 'CNA', 'DBC', 'RET']) \
@@ -128,6 +137,9 @@ class DTO(Time_Model):
     def get_readable_choice(self):
         return dict(self.DTO_STATUS)[self.status]
 
+    def get_open_awb_count(self):
+        return self.awb_status_set.filter(status='DTO').count()
+
 
 class RTO(Time_Model):
     DTO_STATUS = (
@@ -153,7 +165,10 @@ class RTO(Time_Model):
 
 def close_drs(id):
     drs = DRS.objects.get(pk=id)
-    if drs.get_awb_close_count() == drs.get_awb_count() and drs.closing_km != None:
+    if drs.get_open_awb_count() == 0 and drs.closing_km != None:
         DRS.objects.filter(pk=id).update(status='C')
+        return True
+    else:
+        return False
 
 

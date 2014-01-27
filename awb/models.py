@@ -74,7 +74,7 @@ class AWB(Time_Model):
     description = models.CharField(max_length=200, null=True, blank=True)
     category = models.CharField(choices=AWB_TYPE, max_length=3, null=True, blank=True)
     priority = models.CharField(choices=AWB_PRIORITY, max_length=1, default='N')
-    barcode = models.ImageField(upload_to='/staticfiles/barcodes/', null=True, blank=True)
+    barcode = models.ImageField(upload_to='awb/barcode/', null=True, blank=True)
     # preferred_pickup_date = models.CharField(max_length=20, null=True, blank=True)
     # preferred_pickup_time = models.CharField(max_length=20, null=True, blank=True)
     def get_priority(self):
@@ -230,6 +230,13 @@ class AWB(Time_Model):
         except Exception:
             return ''
 
+    def get_status_on_date(self, date):
+        try:
+            status = self.awb_history_set.filter(creation_date__lte=date + ' 23:59:59').order_by('-creation_date')[
+                0].status
+            return resolve_status(status, self.awb)
+        except Exception:
+            return ''
 
     class Meta:
         verbose_name = 'AWB'
@@ -296,7 +303,10 @@ class AWB_Status(Time_Model):
         elif self.status == 'DEL' and self.manifest.category == 'RL':
             return "DTO'd to Client"
         else:
-            return dict(self.STATUS)[self.status]
+            try:
+                return dict(self.STATUS)[self.status]
+            except Exception:
+                return ''
 
     def get_current_branch(self):
         return self.current_tb.get_current_branch
@@ -407,3 +417,25 @@ def get_branch_name(branch):
         return BRANCH_DICT[branch]
     else:
         return branch
+
+
+def resolve_status(status, awb):
+    STATUS = AWB_Status.STATUS
+    if status in ['TB', 'TBD', 'MTS', 'MTD']:
+        return 'In-Transit'
+    elif status == 'DCR':
+        if awb.awb_status.manifest.category == 'FL':
+            return 'Pending for Delivery'
+        else:
+            return 'Pending for DTO'
+    elif status == 'DRS':
+        return 'Dispatched'
+    elif status == 'DTO':
+        return 'Dispatched to Client'
+    elif status == 'DEL' and awb.awb_status.manifest.category == 'RL':
+        return "DTO'd to Client"
+    else:
+        try:
+            return dict(STATUS)[status]
+        except Exception:
+            return ''

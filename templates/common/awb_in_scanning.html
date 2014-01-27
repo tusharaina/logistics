@@ -4,6 +4,7 @@
                id="{{ model|lower }}_in_scanning_table">
             <thead>
             <tr>
+                <th>S.No.</th>
                 <th>AWB</th>
                 <th>Order Id</th>
                 <th>Category</th>
@@ -14,12 +15,13 @@
             </thead>
             <tbody>
             <tr>
+                <td id="s_no"></td>
                 <td><input type="text" name="awb" class="input-medium"></td>
-                <td><input type="text" name="order_id" class="input-medium"></td>
-                <td><input type="text" name="category" class="input-medium"></td>
-                <td><input type="text" name="status" class="input-medium"></td>
-                <td><input type="text" name="delivery_branch" class="input-medium"></td>
-                <td><input type="text" name="manifest" class="input-medium"></td>
+                <td><input type="text" disabled class="input-medium"></td>
+                <td><input type="text" disabled class="input-medium"></td>
+                <td><input type="text" disabled class="input-medium"></td>
+                <td><input type="text" disabled class="input-medium"></td>
+                <td><input type="text" disabled class="input-medium"></td>
             </tr>
             </tbody>
         </table>

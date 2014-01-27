@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from time import gmtime, strftime
 import json
-import csv
+import csv,time
 import re
 
 from django_tables2 import RequestConfig
@@ -15,7 +15,7 @@ from django.core import serializers
 from utils.upload import get_manifest_filename, upload_manifest_data
 from utils.constants import AWB_STATUS, AWB_FL_REMARKS, AWB_RL_REMARKS
 from .forms import UploadManifestForm
-from .tables import AWBTable, ManifestTable, AWBFLTable, AWBRLTable
+from .tables import AWBTable, ManifestTable, AWBFLTable, AWBRLTable, AWBCODTable
 from .models import AWB, Manifest, AWB_Status, AWB_History
 from client.models import Client_Warehouse, Client
 from internal.models import Branch, Branch_Pincode
@@ -43,8 +43,7 @@ def awb_incoming(request):
 def awb_outgoing(request):
     if 'branch' in request.session:
         fl_tbl = AWBFLTable(AWB.objects.filter(awb_status__current_branch_id=request.session['branch'],
-                                               category__in=['COD', 'PRE']).exclude(
-            awb_status__status__in=['DEL', 'RET']))
+                                               category__in=['COD', 'PRE']).exclude(awb_status__status__in=['DEL', 'RET']))
         rl_tbl = AWBRLTable(
             AWB.objects.filter(awb_status__current_branch_id=request.session['branch'], category='REV').exclude(
                 awb_status__status__in=['DEL', 'RET']))
@@ -56,6 +55,42 @@ def awb_outgoing(request):
     RequestConfig(request, paginate={"per_page": 10}).configure(rl_tbl)
     return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'rl_tbl': rl_tbl, 'type': 'outgoing'})
 
+def awb_cod(request):
+    if 'branch' in request.session:
+        fl_tbl= AWBFLTable(AWB.objects.filter(awb_status__current_branch_id=request.session['branch'],
+                                             category='COD').exclude(awb_status__status__in=['DEL', 'RET']))
+    else:
+        fl_tbl= AWBFLTable(AWB.objects.filter(category='COD').exclude(awb_status__status__in=['DEL', 'RET']))
+    RequestConfig(request, paginate={"per_page": 10}).configure(fl_tbl)
+    return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'type': 'cod'})
+
+def awb_prepaid(request):
+    if 'branch' in request.session:
+        fl_tbl= AWBFLTable(AWB.objects.filter(awb_status__current_branch_id=request.session['branch'],
+                                             category='PRE').exclude(awb_status__status__in=['DEL', 'RET']))
+    else:
+        fl_tbl= AWBFLTable(AWB.objects.filter(category='PRE').exclude(awb_status__status__in=['DEL', 'RET']))
+    RequestConfig(request, paginate={"per_page": 10}).configure(fl_tbl)
+    return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'type': 'prepaid'})
+
+def awb_reverse(request):
+    if 'branch' in request.session:
+        fl_tbl= AWBFLTable(AWB.objects.filter(awb_status__current_branch_id=request.session['branch'],
+                                             category='REV').exclude(awb_status__status__in=['DEL', 'RET']))
+    else:
+        fl_tbl= AWBFLTable(AWB.objects.filter(category='REV').exclude(awb_status__status__in=['DEL', 'RET']))
+    RequestConfig(request, paginate={"per_page": 10}).configure(fl_tbl)
+    return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'type': 'reverse'})
+
+
+def expected_cod(request):
+    if 'branch' in request.session:
+        fl_tbl=AWBCODTable(AWB.objects.filter(awb_status__current_drs__branch_id=request.session['branch'],\
+                                             awb_status__current_drs__creation_date__startswith =time.strftime("%Y-%m-%d")))
+    else:
+        fl_tbl = AWBCODTable(AWB.objects.filter(awb_status__current_drs__creation_date__startswith =time.strftime("%Y-%m-%d")))
+    RequestConfig(request, paginate={"per_page": 10}).configure(fl_tbl)
+    return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'type': 'cod'})
 
 def awb_history(request, awb_id):
     # awb = AWB.objects.get(pk=int(awb_id))
@@ -63,6 +98,7 @@ def awb_history(request, awb_id):
      return HttpResponse(data,mimetype='application/json')
     # return render(request, 'awb/awb_history.html',
     #              {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
+
 
 
 def awb_history_external(request, awb_id):
@@ -84,28 +120,26 @@ def awb_generate_mis(request):
         else:
             awbs = AWB.objects.filter(creation_date__range=(start_date, end_date))
         request.session['awb_mis'] = [awb.pk for awb in awbs]
+        request.session['start_date'] = request.POST['start_date']
+        request.session['end_date'] = request.POST['end_date']
         return render(request, 'awb/awb_generate_mis.html', {'awbs': awbs, 'clients': Client.objects.all()})
     else:
         return render(request, 'awb/awb_generate_mis.html', {'clients': Client.objects.all()})
 
 
 def awb_download_mis(request):
-    if request.method == 'GET' and 'awb_mis' in request.session:
-        # awbs = json.loads(request.POST['awbs'])
-        # Create the HttpResponse object with the appropriate CSV header.
+    if request.method == 'GET' and 'awb_mis' in request.session and 'end_date' in request.session:
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="MIS_"' + str(strftime("%Y-%m-%d_%H-%M-%S",
                                                                                        gmtime())) + '".csv"'
 
         writer = csv.writer(response)
-        # field_names = [field.name for field in opts.fields]
-        # Write a first row with header information
-        #writer.writerow(field_names)
-        # Write data rows
         header = ['AWB', 'Client', 'Order ID', 'Priority', 'Consignee', 'Address', 'Phone', 'Pincode', 'Category',
                   'Amount', 'COD Amount', 'Weight', 'Delivery Branch', 'Pickup Branch', 'Dispatch Count',
                   'First Pending', 'First Dispatch', 'Last Dispatch', 'Last Scan', 'Current Status',
-                  'First Scan Location', 'CS Call Made', 'Remark', 'Reason', 'Date']
+                  'Last Status on ' + request.session['end_date'], 'First Scan Location', 'CS Call Made', 'Remark',
+                  'Reason',
+                  'Date']
         writer.writerow(header)
         for id in request.session['awb_mis']:
             awb = AWB.objects.get(pk=id)
@@ -115,11 +149,20 @@ def awb_download_mis(request):
                  awb.phone_1, awb.pincode.pincode, awb.get_readable_choice(), awb.package_value,
                  awb.expected_amount, awb.weight, awb.get_delivery_branch(), awb.get_pickup_branch(),
                  awb.get_drs_count(), awb.get_first_pending(), awb.get_first_dispatch(), awb.get_last_dispatch(),
-                 awb.get_last_scan(), awb.awb_status.get_readable_choice(), awb.get_first_scan_branch(),
-                 awb.get_last_call_made_time(), awb.awb_status.remark, awb.awb_status.reason,
-                 date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
+                 awb.get_last_scan(), awb.awb_status.get_readable_choice(),
+                 awb.get_status_on_date(request.session['end_date']),
+                 awb.get_first_scan_branch(), awb.get_last_call_made_time(), awb.awb_status.remark,
+                 awb.awb_status.reason, date_format(awb.creation_date, "SHORT_DATETIME_FORMAT")])
+
         del request.session['awb_mis']
+        del request.session['end_date']
         return response
+        # result = generate_mis.delay(request.session['awb_mis'], request.session['end_date'])
+        # del request.session['awb_mis']
+        # del request.session['end_date']
+        # return result.get()
+    else:
+        return HttpResponse('Server Error')
 
 
 def manifest(request):
@@ -297,7 +340,8 @@ def search_awb_external(request, awbs):
     data = []
     for awb in awbs:
         data.append({'pk': awb.pk, 'awb': awb.awb, 'status': awb.awb_status.get_readable_choice(),
-                     'date': date_format(awb.awb_status.on_update, "SHORT_DATETIME_FORMAT").upper()})
+                     'date': date_format(awb.awb_history_set.all().order_by('-creation_date')[0].creation_date,
+                                         "SHORT_DATETIME_FORMAT").upper()})
     return HttpResponse(json.dumps(data), 'application/json')
 
 

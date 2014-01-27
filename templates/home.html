@@ -27,8 +27,40 @@
     {#    </div>#}
     <div class="row-fluid">
     <div class="span12">
-    <div id="get_message"></div>
+    <div class="row-fluid">
+        <div class="row-fluid">
+            <div class="span12 table-responsive">
+                <h4 class="blue">Cash
+                </h4>
+            </div>
+        </div>
+        <div class="span7 infobox-container">
 
+            <div class="infobox infobox-red  ">
+                <div class="infobox-icon">
+                    <i class="icon-rupee"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_expected_cash"></span>
+
+                    <div class="infobox-content"><a href="/transit/awb/expected_cash/awb ">Expected</a></div>
+                </div>
+                <div class="stat stat-important">&nbsp</div>
+            </div>
+
+            <div class="infobox infobox-black ">
+                <div class="infobox-icon">
+                    <i class="icon-rupee"></i>
+                </div>
+                <div class="infobox-data">
+                    <span class="infobox-data-number" id="get_collected_cash"></span>
+
+                    <div class="infobox-content">Collected</div>
+                </div>
+                <div class="stat stat-important">&nbsp</div>
+            </div>
+        </div>
+    </div>
 
     <div class="row-fluid">
         <div class="row-fluid">
@@ -49,7 +81,7 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_mts_incoming"></span>
 
-                    <div class="infobox-content">MTS</div>
+                    <div class="infobox-content"><a href="/transit/mts/incoming ">MTS</a></div>
                 </div>
                 <div class="stat stat-important">&nbsp</div>
             </div>
@@ -61,7 +93,7 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_tb_incoming"></span>
 
-                    <div class="infobox-content">TB</div>
+                    <div class="infobox-content"><a href="/transit/tb/incoming ">TB</a></div>
                 </div>
                 <div class="stat stat-important">&nbsp</div>
             </div>
@@ -73,7 +105,7 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_awb_incoming"></span>
 
-                    <div class="infobox-content">AWB</div>
+                    <div class="infobox-content"><a href="/transit/awb/incoming ">AWB</a></div>
                 </div>
                 <div class="stat stat-important">&nbsp</div>
             </div>
@@ -86,8 +118,8 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_awb_incomingCOD"></span>
 
-                    <div class="infobox-content">
-                        COD
+                    <div class="infobox-content"><a href="/transit/awb/cod ">
+                        COD</a>
                     </div>
 
                 </div>
@@ -101,8 +133,8 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_awb_incomingPRE"></span>
 
-                    <div class="infobox-content">
-                        Prepaid
+                    <div class="infobox-content"><a href="/transit/awb/prepaid ">
+                        Prepaid</a>
                     </div>
                 </div>
             </div>
@@ -115,7 +147,7 @@
                     <span class="infobox-data-number" id="get_count_awb_incomingREV"></span>
 
                     <div class="infobox-content">
-                        <span class="bigger-110">Reverse</span>
+                        <span class="bigger-110"><a href="/transit/awb/reverse ">Reverse</a></span>
                     </div>
                 </div>
             </div>
@@ -141,7 +173,7 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_mts_outgoing"></span>
 
-                    <div class="infobox-content">MTS</div>
+                    <div class="infobox-content"><a href="/transit/mts/outgoing ">MTS</a></div>
                 </div>
                 <div class="stat stat-success">&nbsp</div>
             </div>
@@ -153,7 +185,7 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_tb_outgoing"></span>
 
-                    <div class="infobox-content">TB</div>
+                    <div class="infobox-content"><a href="/transit/tb/outgoing ">TB</a></div>
                 </div>
                 <div class="stat stat-success">&nbsp</div>
             </div>
@@ -165,7 +197,7 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_awb_outgoing"></span>
 
-                    <div class="infobox-content">AWB</div>
+                    <div class="infobox-content"><a href="/transit/awb/outgoing ">AWB</a></div>
                 </div>
                 <div class="stat stat-success">&nbsp</div>
             </div>
@@ -177,8 +209,8 @@
                 <div class="infobox-data">
                     <span class="infobox-data-number" id="get_count_awb_outgoingCOD"></span>
 
-                    <div class="infobox-content">
-                        COD
+                    <div class="infobox-content"><a href="/transit/awb/cod ">
+                        COD</a>
                     </div>
 
                 </div>

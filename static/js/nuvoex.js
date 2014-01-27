@@ -43,20 +43,19 @@ function closeLoader() {
     $('#ajaxLoader').hide();
 }
 
-//function getUrlVars() {
-//    var vars = {};
-//    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function (m, key, value) {
-//        vars[key] = value;
-//    });
-//    return vars;
-//}
+$('.collapse_table').live('click', function () {
+    if ($(this).nextAll('div:first').is(":visible")) {
+        $(this).nextAll('div:first').slideUp();
+        $(this).find('i').attr('class', 'icon-double-angle-down');
+    } else {
+        $(this).nextAll('div:first').slideDown();
+        $(this).find('i').attr('class', 'icon-double-angle-right');
+    }
+});
 
-//$('li').live('hover', function () {
-//
-//    $(this).attr('class', 'open');
-//
-//});
 $(document).ready(function () {
+
+
     $('#start_date input').datepicker({
         dateFormat: 'yy-mm-dd'
     });
@@ -142,7 +141,8 @@ $(document).ready(function () {
         $('#awb_status_update_table tbody tr').map(function () {
             id = this.id;
             $(this).find('#reason_' + id).datepicker({
-                dateFormat: 'yy-mm-dd'
+                dateFormat: 'yy-mm-dd',
+                minDate: 0
             })
         }).get();
     }
@@ -173,7 +173,7 @@ function get_drs_cash(drs, type) {
     });
 }
 
-function get_drs_awbs(sort, element) {
+function get_drs_awbs(sort, element) {  
     if ($(this).attr('id') == sort) {
         sort = '-' + sort;
         $(this).attr('id', sort);
@@ -202,6 +202,8 @@ setInterval(function () {
 }, 60000);
 
 function call_count_functions() {
+    get_cash('expected');
+    get_cash('collected');
     get_count('awb', 'incoming', '');
     get_count('awb', 'outgoing', '');
     get_count('awb', 'incoming', 'COD');
@@ -216,6 +218,21 @@ function call_count_functions() {
     get_count('mts', 'outgoing', '');
     get_count('drs', '', '');
     get_count('dto', '', '');
+}
+
+function get_cash(type) {
+    if ($("#get_" + type + "_cash").length) {
+        $.ajax({
+            type: 'GET',
+            url: '/internal/branch/cash',
+            data: {
+                'type': type
+            },
+            success: function (response) {
+                $("#get_" + type + "_cash").html(response);
+            }
+        });
+    }
 }
 
 function get_count(model, type, category) {
@@ -261,7 +278,7 @@ function get_message() {
         ////cache: true,
         beforeSend: function () {
             if ($('#get_message').html() != '') {
-                $('#get_message').fadeOut(100);
+                $('#get_message').fadeOut();
             }
         },
         success: function (response) {
@@ -425,7 +442,7 @@ $("#create_dto_form").submit(function () {
         $.ajax({
             type: 'POST',
             url: '/transit/dto/create_dto',
-            //cache: true,
+            //cache: true,dto_in_scanning_table
             data: {
                 fe: $('#id_fe').val(),
                 vehicle: $('#id_vehicle').val(),
@@ -463,13 +480,20 @@ $('#dto_in_scanning_table tbody tr input[type="text"]').live('change', function 
             get_message();
         }
     });
-    // }
+    if ($(this).attr('name') == 'height') {
+        $('#awb_in_scan').focus();
+    }
 });
 
-$('#manifest_in_scanning_table tbody tr td:first-child input').live('change', function () {
-//    $('#awb_alert').fadeOut(400, function () {
-//        $(this).remove();
-//    });
+function already_scanned_error_msg(awb) {
+    $('#get_message').html(msg).fadeOut();
+    var msg = '<div class="alert alert-block alert-error">';
+    msg += '<button data-dismiss="alert" class="close" type="button"><i class="icon-remove"></i></button>';
+    msg += 'AWB : ' + awb + ' | Status : Already In-scanned</div>';
+    $('#get_message').html(msg).fadeIn(100);
+}
+
+$('#manifest_in_scanning_table tbody tr input[name="awb"]').live('change', function () {
     var awb = $(this).val();
     $(this).val('');
     if (awb != '') {
@@ -481,17 +505,23 @@ $('#manifest_in_scanning_table tbody tr td:first-child input').live('change', fu
                 awb: awb
             },
             success: function (response) {
-                //alert(response);
-                $('#manifest_in_scanning_table tbody tr:first-child').clone().insertAfter('#manifest_in_scanning_table tbody tr:first-child');
-                $('#manifest_in_scanning_table tbody tr:nth-child(2)').html(response);
-                $('#manifest_in_scanning_table tbody tr:first-child td:first-child input').focus();
-                get_message();
+                if (update_awb_scanned_counter(awb)) {
+                    $('#manifest_in_scanning_table tbody tr:first-child').clone().insertAfter('#manifest_in_scanning_table tbody tr:first-child');
+                    $('#manifest_in_scanning_table tbody tr:nth-child(2)').html(response);
+                    $('#manifest_in_scanning_table tbody tr:first-child td:first-child input').focus();
+                    $('#manifest_in_scanning_table tbody tr:nth-child(2) #s_no').html($('#awb_scanned_count').val().split(',').length);
+                    get_message();
+                } else {
+                    already_scanned_error_msg(awb);
+                }
             }
         });
+        $(this).focus();
     }
+    $(this).focus();
 });
 
-$('#drs_in_scanning_table tbody tr td:first-child input').live('change', function () {
+$('#drs_in_scanning_table tbody tr input[name="awb"]').live('change', function () {
     var awb = $(this).val();
     $(this).val('');
     if (awb != '') {
@@ -505,10 +535,15 @@ $('#drs_in_scanning_table tbody tr td:first-child input').live('change', functio
             success: function (response) {
                 //alert(response);
                 if (response != '') {
-                    $('#drs_in_scanning_table tbody tr:first-child').clone().insertAfter('#drs_in_scanning_table tbody tr:first-child');
-                    $('#drs_in_scanning_table tbody tr:nth-child(2)').html(response);
-                    $('#drs_in_scanning_table tbody tr:first-child td:first-child input').focus();
-                    get_message();
+                    if (update_awb_scanned_counter(awb)) {
+                        $('#drs_in_scanning_table tbody tr:first-child').clone().insertAfter('#drs_in_scanning_table tbody tr:first-child');
+                        $('#drs_in_scanning_table tbody tr:nth-child(2)').html(response);
+                        $('#drs_in_scanning_table tbody tr:first-child td:first-child input').focus();
+                        $('#drs_in_scanning_table tbody tr:nth-child(2) #s_no').html($('#awb_scanned_count').val().split(',').length);
+                        get_message();
+                    } else {
+                        already_scanned_error_msg(awb);
+                    }
                 } else {
                     get_message();
                 }
@@ -518,11 +553,13 @@ $('#drs_in_scanning_table tbody tr td:first-child input').live('change', functio
             }
         });
     }
+    $(this).focus();
 });
 
 $('#dto_in_scanning #awb_in_scan').live('change', function () {
     var awb = $(this).val();
     $(this).val('');
+
     if (awb != '') {
         $.ajax({
             type: 'POST',
@@ -534,11 +571,18 @@ $('#dto_in_scanning #awb_in_scan').live('change', function () {
             success: function (response) {
                 //alert(response);
                 if (response != '') {
-                    $('#dto_in_scanning_table').show();
-                    $(response).insertBefore('#dto_in_scanning_table tbody tr:first-child');
-                    get_message();
+                    if (update_awb_scanned_counter(awb)) {
+                        $('#dto_in_scanning_table').show();
+                        $(response).insertBefore('#dto_in_scanning_table tbody tr:first-child');
+                        $('#dto_in_scanning_table tbody tr:first-child input[name="weight"]').focus();
+                        $('#dto_in_scanning_table tbody tr:first-child #s_no').html($('#awb_scanned_count').val().split(',').length);
+                        get_message();
+                    } else {
+                        already_scanned_error_msg(awb);
+                    }
                 } else {
                     get_message();
+                    $('#dto_in_scanning #awb_in_scan').focus();
                 }
 //                var alert = $('#awb_status_alert').clone();
 //                $('#awb_status_alert').hide();
@@ -548,6 +592,25 @@ $('#dto_in_scanning #awb_in_scan').live('change', function () {
     }
 });
 
+
+function update_awb_scanned_counter(awb) {
+    var awbs = $('#awb_scanned_count').val();
+    if (awbs != '') {
+        var array = awbs.split(',')
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] == awb) {
+                return false;
+            }
+        }
+        awbs += ',' + awb;
+        $('#awb_scanned_count').val(awbs);
+        return true;
+    } else {
+        awbs = awb;
+        $('#awb_scanned_count').val(awbs);
+        return true;
+    }
+}
 
 $('.select_all').live('change', function () {
     if ($(this).is(":checked")) {
@@ -767,38 +830,61 @@ $('#dto_print_sheet').click(function () {
 //});
 
 function inScanDRSAWB(element) {
-    if (confirm('Are you sure want to update status ?')) {
-        $.ajax({
-            type: 'POST',
-            url: '/transit/drs/awb_cancel_scan',
-            data: {
-                id: $(element).closest('tr').attr('id'),
-                status: $(element).closest('tr').find('#status').val(),
-                awb: $(element).val()
-            },
-            success: function (response) {
-                if (response != '') {
-                    $(element).closest('tr').find('#status').attr('disabled', 'disabled');
-                    $(element).closest('tr').find('input[type="text"]').attr('disabled', 'disabled');
-                    update_drs_cash();
-                    get_message();
-                } else {
-                    update_drs_cash();
-                    get_message();
-                }
+    var tr = $(element).closest('tr');
+    var id = tr.attr('id');
+    var status = tr.find('#status').val();
+    if (tr.find('#reason_' + id).length) {
+        var reason = tr.find('#reason_' + id).val();
+    } else {
+        reason = '';
+    }
+    if ($(element).val() == tr.find('#awb a').html()) {
+        //alert(tr.find('#awb a').html());
+        if (status == 'DBC' && reason == '') {
+            alert('Please select deferred date');
+            tr.find('#reason_' + tr.attr('id')).removeAttr('disabled').focus();
+            $(element).attr('disabled', 'disabled');
+        } else {
+            if (confirm('Are you sure want to update status ?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/transit/drs/awb_cancel_scan',
+                    data: {
+                        id: id,
+                        status: status,
+                        reason: reason,
+                        awb: $(element).val()
+                    },
+                    success: function (response) {
+                        if (response != '') {
+                            tr.find('#status').attr('disabled', 'disabled');
+                            tr.find('input[type="text"]').attr('disabled', 'disabled');
+                            tr.find('select"]').attr('disabled', 'disabled');
+                            update_drs_cash();
+                            get_message();
+                        } else {
+                            update_drs_cash();
+                            get_message();
+                        }
+                    }
+                });
             }
-        });
+        }
+    } else {
+        alert('Please in-scan shipment');
+        $(element).removeAttr('disabled').focus();
     }
 }
 
 $('#collected_amount').live('keydown', function (e) {
     var element = $(this);
-    var exp_amt = element.closest('tr').find('#expected_amount').html().replace(/\.?[0]*$/, '');
+    var exp_amt = parseFloat(element.closest('tr').find('#expected_amount').html().replace(/\.[0]*$/, ''));
     //alert(exp_amt);
     if (element.closest('tr').find('#type').html() == 'COD') {
         if (e.which == 13 || e.which == 9) {
-            if (element.val() < exp_amt) {
+            if (parseFloat(element.val()) != exp_amt) {
                 alert('Please enter correct amount');
+                element.focus();
             } else {
                 if (confirm('Are you sure want to change status to delivered ?')) {
                     $.ajax({
@@ -827,18 +913,26 @@ $('#collected_amount').live('keydown', function (e) {
 
 function update_awb_reason(element) {
     var tr = $(element).closest('tr');
-    var status = $(element).closest('tr').find('#status');
+    var awb = tr.attr('id');
+    var status = tr.find('#status');
     if (status.val() == 'DBC') {
-        updateDRSAWBStatus(status);
-    } else {
-        alert("Please change Status to 'Deferred by Customer'");
+        if (tr.find('#in_scan').val() != tr.find('#awb a').html() && tr.find('#type').html() != 'Reverse Pickup') {
+            alert("Please in-scan shipment");
+            $(element).closest('tr').find('#in_scan').removeAttr('disabled').focus();
+        } else {
+            updateDRSAWBStatus(status);
+        }
     }
 }
 
 function updateDRSAWBStatus(element) {
     var tr = $(element).closest('tr');
     var awb = tr.attr('id');
-    var reason = $("#reason_" + awb).val();
+    if (tr.find('#reason_' + id).length) {
+        var reason = tr.find('#reason_' + id).val();
+    } else {
+        reason = '';
+    }
     var status = $(element).val();
     if (tr.find('#collected_amount').length) {
         var coll_amt = tr.find('#collected_amount').val();
@@ -853,12 +947,12 @@ function updateDRSAWBStatus(element) {
         alert('Please select deferred date');
         $("#reason_" + awb).removeAttr('disabled').focus();
     } else if ((status == 'CAN' || status == 'CNA' || status == 'DBC') &&
-        tr.find('#in_scan').attr('disabled') == 'disabled' &&
+        tr.find('#in_scan').val() != tr.find('#awb a').html() &&
         (tr.find('#type').html() == 'COD' ||
             tr.find('#type').html() == 'Prepaid')) {
         alert('Please in-scan shipment');
         tr.find('#in_scan').removeAttr('disabled').focus();
-    } else if (status == 'PC' && reason == '') {
+    } else if (status == 'PC' && tr.find('#in_scan').val() != tr.find('#awb a').html()) {
         alert('Please in-scan shipment');
         tr.find('#in_scan').removeAttr('disabled').focus();
     }
@@ -876,6 +970,7 @@ function updateDRSAWBStatus(element) {
                 success: function (response) {
                     if (response == 'True') {
                         $(element).closest('tr').find('select').attr('disabled', 'disabled');
+                        $(element).closest('tr').find('input[type="text"]').attr('disabled', 'disabled');
                         update_drs_cash();
                         get_message();
                     }
@@ -996,7 +1091,6 @@ function update_warehouse(element) {
     });
 }
 
-
 function save_drs_closing_km(drs_id) {
     closing_km = $('#drs_closing_km_form #closing_km').val();
     if (closing_km != '') {
@@ -1008,10 +1102,42 @@ function save_drs_closing_km(drs_id) {
                 closing_km: closing_km
             },
             success: function (response) {
-                get_message();
+                if (response == 'True') {
+                    setTimeout('get_message()', 100);
+                    window.location = '/transit/drs';
+                } else {
+                    get_message();
+                    alert("Please close all shipments");
+                }
             }
         });
     } else {
         alert('Please enter closing km');
     }
+}
+
+
+function drs_search() {
+    if ($('#drs_search_form #branch').length) {
+        branch = $('#drs_search_form #branch').val();
+    } else {
+        branch = ''
+    }
+    $.ajax({
+        type: 'GET',
+        url: '/transit/drs/search',
+        beforeSend: function () {
+            ajaxloader($('#drs_search_table'));
+        },
+        data: {
+            branch: branch,
+            start_date: $('#drs_search_form #start_date input').val(),
+            end_date: $('#drs_search_form #end_date input').val(),
+            status: $('#drs_search_form #status').val()
+        },
+        success: function (response) {
+            $('#drs_search_table').html(response);
+            closeLoader();
+        }
+    });
 }
