@@ -416,8 +416,6 @@ def drs_search(request):
 
 
 def drs_detail(request, drs_id):
-    # data=serializers.serialize('json',DRS.objects.all())#(id=int(drs_id)))
-    # return HttpResponse(data,mimetype='application/json')
 
     fl = AWB.objects.filter(awb_status__current_drs=drs_id).exclude(category='REV').order_by('category', 'awb')
     rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category', 'awb')
@@ -426,6 +424,14 @@ def drs_detail(request, drs_id):
     rl = AWB.objects.filter(awb_status__current_drs=drs_id, category='REV').order_by('category')
     return render(request, 'transit/awb_status_update.html',
                   {'fl': fl, 'rl': rl, 'drs': DRS.objects.get(pk=drs_id), 'model': 'drs'})
+
+def drs_mobile(request):
+      data=serializers.serialize('json',DRS.objects.all(), fields=('on_update','status','opening_km','drs_id','creation_date','branch'))
+      return HttpResponse(data,mimetype='application/json')
+
+def drs_detail_mobile(request,drs_id):
+      data=serializers.serialize('json',DRS.objects.filter(id=int(drs_id)))#,fields=('on_update','status','opening_km','drs_id','creation_date','branch'))
+      return HttpResponse(data,mimetype='application/json')
 
 
 def dto_detail(request, dto_id):

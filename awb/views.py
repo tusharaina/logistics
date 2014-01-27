@@ -15,7 +15,7 @@ from django.core import serializers
 from utils.upload import get_manifest_filename, upload_manifest_data
 from utils.constants import AWB_STATUS, AWB_FL_REMARKS, AWB_RL_REMARKS
 from .forms import UploadManifestForm
-from .tables import AWBTable, ManifestTable, AWBFLTable, AWBRLTable, AWBCODTable
+from .tables import AWBTable, ManifestTable, AWBFLTable, AWBRLTable, AWBCODTable, AWBCODTable1
 from .models import AWB, Manifest, AWB_Status, AWB_History
 from client.models import Client_Warehouse, Client
 from internal.models import Branch, Branch_Pincode
@@ -92,12 +92,23 @@ def expected_cod(request):
     RequestConfig(request, paginate={"per_page": 10}).configure(fl_tbl)
     return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'type': 'cod'})
 
+def collected_cod(request):
+    if 'branch' in request.session:
+        fl_tbl=AWBCODTable1(AWB.objects.filter(awb_status__current_drs__branch_id=request.session['branch'],\
+                                             awb_status__current_drs__creation_date__startswith =time.strftime("%Y-%m-%d")))
+    else:
+        fl_tbl = AWBCODTable1(AWB.objects.filter(awb_status__current_drs__creation_date__startswith =time.strftime("%Y-%m-%d")))
+    RequestConfig(request, paginate={"per_page": 10}).configure(fl_tbl)
+    return render(request, 'awb/awb.html', {'fl_tbl': fl_tbl, 'type': 'cod'})
+
+
 def awb_history(request, awb_id):
-    # awb = AWB.objects.get(pk=int(awb_id))
-     data=serializers.serialize('json',AWB.objects.filter(id=int(awb_id)))
-     return HttpResponse(data,mimetype='application/json')
-    # return render(request, 'awb/awb_history.html',
-    #              {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
+        awb = AWB.objects.get(pk=int(awb_id))
+        return render(request, 'awb/awb_history.html', {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
+
+def awb_history_mobile(request,awb_id):
+        data=serializers.serialize('json',AWB.objects.filter(id=int(awb_id)))
+        return HttpResponse(data,mimetype='application/json')
 
 
 

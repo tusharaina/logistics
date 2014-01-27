@@ -48,6 +48,15 @@ class AWBCODTable(tables.Table):
         fields = ('awb', 'order_id', 'customer_name', 'pincode')
         attrs = {"class": "table table-striped table-bordered table-hover table-condensed"}
 
+class AWBCODTable1(tables.Table):
+    awb = tables.TemplateColumn(
+        template_code='<a href="/transit/awb/{{ record.id }}" >{{ record.awb }}</a>')
+    collected_amt = tables.Column(accessor='collected_amt')
+
+    class Meta:
+        model = AWB
+        fields = ('awb', 'order_id', 'customer_name', 'pincode')
+        attrs = {"class": "table table-striped table-bordered table-hover table-condensed"}
 
 class AWBRLTable(tables.Table):
     awb = tables.TemplateColumn(
