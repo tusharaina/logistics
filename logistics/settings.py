@@ -1,6 +1,11 @@
 import os
+import sys
+import dj_database_url,urlparse
+import site
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+#sys.path.insert(0, '/development/logistics/logistics/')
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
@@ -28,10 +33,12 @@ ADMINS = (
 )
 #TEMPLATE_DEBUG = True
 ALLOWED_HOSTS = ['localhost', 'ship.nuvoex.com', 'test.nuvoex.com']
+
 # Application definition
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -46,7 +53,10 @@ INSTALLED_APPS = (
     'django_tables2',
     'south',
     'djcelery',
+    'subdomains',
 )
+
+
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -55,9 +65,17 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    #'subdomains.middleware.SubdomainURLRoutingMiddleware',
 )
 
+#SESSION_COOKIE_DOMAIN = '.local'
 ROOT_URLCONF = 'logistics.urls'
+
+SUBDOMAIN_URLCONFS = {
+    None: 'logistics.urls', # no subdomain, e.g. ``example.com``
+    'www': 'logistics.urls',
+    'm': 'logistics.urls.mobile',
+}
 
 WSGI_APPLICATION = 'logistics.wsgi.application'
 
@@ -89,6 +107,8 @@ DATABASES = {
 #}
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
+SITE_ID = 1
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Kolkata'

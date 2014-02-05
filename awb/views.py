@@ -12,6 +12,12 @@ from django.contrib import messages
 from django.utils.formats import date_format
 from django.core import serializers
 
+from awb.serializers import UserSerializer
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from awb.models import AWB
+from django.views.decorators.csrf import csrf_exempt
+
 from utils.upload import get_manifest_filename, upload_manifest_data
 from utils.constants import AWB_STATUS, AWB_FL_REMARKS, AWB_RL_REMARKS
 from .forms import UploadManifestForm
@@ -107,8 +113,8 @@ def awb_history(request, awb_id):
         return render(request, 'awb/awb_history.html', {'awb_hist': awb.get_awb_history(), 'awb_details': awb})
 
 def awb_history_mobile(request,awb_id):
-        data=serializers.serialize('json',AWB.objects.filter(id=int(awb_id)))
-        return HttpResponse(data,mimetype='application/json')
+        data = serializers.serialize('json', AWB.objects.filter(id=int(awb_id)))
+        return HttpResponse(data, mimetype='application/json')
 
 
 
@@ -429,3 +435,28 @@ def awb_update_by_cc(request):
         request.session['message']['class'] = 'error'
         request.session['message']['report'] = 'Could\'nt Updated : Server Error'
         return HttpResponse('')
+
+class JSONResponse(HttpResponse):
+     def __init__(self, data, **kwargs):
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
+
+@csrf_exempt
+def awb_list(request, pk):
+    """
+    List all code request, or create a new request.
+    """
+    if request.method == 'GET':
+        snippets = AWB.objects.filter(pk=int(pk))
+        serializer = UserSerializer(snippets, many=True)
+        return JSONResponse(serializer.data)
+
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        serializer = UserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JSONResponse(serializer.data, status=201)
+        return JSONResponse(serializer.errors, status=400)
+

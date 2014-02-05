@@ -15,5 +15,7 @@ urlpatterns = patterns('',
                        url(r'^zoning/', include('zoning.urls')),
                        url(r'^transit/', include('awb.urls')),
                        url(r'^reports/(?P<type>generic|cash-report)$', reports),
+                       url(r'^', include('mobile.urls')),
                        url(r'^', include('userlogin.urls')),
-)
+                       )
+
