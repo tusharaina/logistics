@@ -150,11 +150,7 @@ INSTALLED_APPS += ('storages', )
 # if not DEBUG:
 #     key for aws is deleted here and needs to be assigned whenever used for live server
 #
-#     S3_URL = 'http://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-#     STATIC_URL = S3_URL + 'static/'
-#     MEDIA_URL = S3_URL + 'media/'
-#     ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
-#     AWS_LOCATION = 'static'
+#     
 #
 # BROKER_URL = "redis://localhost:6379/0"
 # CELERY_RESULT_BACKEND = "redis"
